@@ -45,56 +45,78 @@ def hass_get_state(conn, entity_id=""):
         return ActionResponse(Action.ERROR, error_msg, None)
 
 
+
 async def handle_hass_get_state(conn, entity_id):
     ha_config = initialize_hass_handler(conn)
     api_key = ha_config.get("api_key")
     base_url = ha_config.get("base_url")
+
+    if not entity_id:
+        logger.bind(tag=TAG).error("Invalid device ID: {}".format(entity_id))
+        return "Invalid device ID"
+
     url = f"{base_url}/api/states/{entity_id}"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    response = requests.get(url, headers=headers)
+
+
+    logger.bind(tag=TAG).info(f"Querying device state: {url} with headers: {headers}")
+    try:
+        response = await asyncio.to_thread(requests.get, url, headers=headers)
+    except Exception as e:
+        logger.bind(tag=TAG).error(f"Network request error: {e}")
+        return "Network request failed"
+
     if response.status_code == 200:
-        responsetext = "设备状态:" + response.json()["state"] + " "
-        logger.bind(tag=TAG).info(f"api返回内容: {response.json()}")
+        try:
+            json_data = response.json()
+            attributes = json_data.get("attributes", {})
+            state = json_data.get("state", "unknown")
+            responsetext = f"Device status: {state}"
 
-        if "media_title" in response.json()["attributes"]:
-            responsetext = (
-                responsetext
-                + "正在播放的是:"
-                + str(response.json()["attributes"]["media_title"])
-                + " "
-            )
-        if "volume_level" in response.json()["attributes"]:
-            responsetext = (
-                responsetext
-                + "音量是:"
-                + str(response.json()["attributes"]["volume_level"])
-                + " "
-            )
-        if "color_temp_kelvin" in response.json()["attributes"]:
-            responsetext = (
-                responsetext
-                + "色温是:"
-                + str(response.json()["attributes"]["color_temp_kelvin"])
-                + " "
-            )
-        if "rgb_color" in response.json()["attributes"]:
-            responsetext = (
-                responsetext
-                + "rgb颜色是:"
-                + str(response.json()["attributes"]["rgb_color"])
-                + " "
-            )
-        if "brightness" in response.json()["attributes"]:
-            responsetext = (
-                responsetext
-                + "亮度是:"
-                + str(response.json()["attributes"]["brightness"])
-                + " "
-            )
-        logger.bind(tag=TAG).info(f"查询返回内容: {responsetext}")
-        return responsetext
-        # return response.json()['attributes']
-        # response.attributes
+            for key, value in attributes.items():
+                responsetext += f"\n{key}: {value}"
+            if "media_title" in response.json()["attributes"]:
+                responsetext = (
+                    responsetext
+                    + "正在播放的是:"
+                    + str(response.json()["attributes"]["media_title"])
+                    + " "
+                )
+            if "volume_level" in response.json()["attributes"]:
+                responsetext = (
+                    responsetext
+                    + "音量是:"
+                    + str(response.json()["attributes"]["volume_level"])
+                    + " "
+                )
+            if "color_temp_kelvin" in response.json()["attributes"]:
+                responsetext = (
+                    responsetext
+                    + "色温是:"
+                    + str(response.json()["attributes"]["color_temp_kelvin"])
+                    + " "
+                )
+            if "rgb_color" in response.json()["attributes"]:
+                responsetext = (
+                    responsetext
+                    + "rgb颜色是:"
+                    + str(response.json()["attributes"]["rgb_color"])
+                    + " "
+                )
+            if "brightness" in response.json()["attributes"]:
+                responsetext = (
+                    responsetext
+                    + "亮度是:"
+                    + str(response.json()["attributes"]["brightness"])
+                    + " "
+                )
 
+            logger.bind(tag=TAG).info(f"Query return content: {responsetext}")
+            return responsetext
+        except (KeyError, ValueError) as e:
+            logger.bind(tag=TAG).error(f"Parse JSON data error: {e}")
+            return "Parse JSON data failed"
+    elif response.status_code == 404:
+        return f"Device '{entity_id}' not found"
     else:
-        return f"切换失败，错误码: {response.status_code}"
+        return f"Failed to query device, error code: {response.status_code}"

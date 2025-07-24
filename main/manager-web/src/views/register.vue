@@ -16,9 +16,9 @@
           <!-- 修改标题部分 -->
           <div style="display: flex;align-items: center;gap: 20px;margin-bottom: 39px;padding: 0 30px;">
             <img loading="lazy" alt="" src="@/assets/login/hi.png" style="width: 34px;height: 34px;" />
-            <div class="login-text">注册</div>
+            <div class="login-text">{{$t('register.title')}}</div>
             <div class="login-welcome">
-              WELCOME TO REGISTER
+              {{$t('register.welcome')}}
             </div>
           </div>
 
@@ -27,7 +27,7 @@
               <!-- 用户名/手机号输入框 -->
               <div class="input-box" v-if="!enableMobileRegister">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/username.png" />
-                <el-input v-model="form.username" placeholder="请输入用户名" />
+                <el-input v-model="form.username" :placeholder="$t('register.username')" />
               </div>
 
               <!-- 手机号注册部分 -->
@@ -38,16 +38,16 @@
                       <el-option v-for="item in mobileAreaList" :key="item.key" :label="`${item.name} (${item.key})`"
                         :value="item.key" />
                     </el-select>
-                    <el-input v-model="form.mobile" placeholder="请输入手机号码" />
+                    <el-input v-model="form.mobile" :placeholder="$t('register.mobilePlaceholder')" />
                   </div>
                 </div>
 
                 <div style="display: flex; align-items: center; margin-top: 20px; width: 100%; gap: 10px;">
                   <div class="input-box" style="width: calc(100% - 130px); margin-top: 0;">
                     <img loading="lazy" alt="" class="input-icon" src="@/assets/login/shield.png" />
-                    <el-input v-model="form.captcha" placeholder="请输入验证码" style="flex: 1;" />
+                    <el-input v-model="form.captcha" :placeholder="$t('register.captchaPlaceholder')" style="flex: 1;" />
                   </div>
-                  <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="验证码"
+                  <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" :alt="$t('register.captchaAlt')"
                     style="width: 150px; height: 40px; cursor: pointer;" @click="fetchCaptcha" />
                 </div>
 
@@ -56,12 +56,12 @@
                 <div style="display: flex; align-items: center; margin-top: 20px; width: 100%; gap: 10px;">
                   <div class="input-box" style="width: calc(100% - 130px); margin-top: 0;">
                     <img loading="lazy" alt="" class="input-icon" src="@/assets/login/phone.png" />
-                    <el-input v-model="form.mobileCaptcha" placeholder="请输入手机验证码" style="flex: 1;" maxlength="6" />
+                    <el-input v-model="form.mobileCaptcha" :placeholder="$t('register.mobileCaptchaPlaceholder')" style="flex: 1;" maxlength="6" />
                   </div>
                   <el-button type="primary" class="send-captcha-btn" :disabled="!canSendMobileCaptcha"
                     @click="sendMobileCaptcha">
                     <span>
-                      {{ countdown > 0 ? `${countdown}秒后重试` : '发送验证码' }}
+                      {{ countdown > 0 ? `${countdown}${$t('register.resendIn')}` : $t('register.sendCaptcha') }}
                     </span>
                   </el-button>
                 </div>
@@ -70,13 +70,13 @@
               <!-- 密码输入框 -->
               <div class="input-box">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/password.png" />
-                <el-input v-model="form.password" placeholder="请输入密码" type="password" show-password />
+                <el-input v-model="form.password" :placeholder="$t('register.passwordPlaceholder')" type="password" />
               </div>
 
               <!-- 新增确认密码 -->
               <div class="input-box">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/password.png" />
-                <el-input v-model="form.confirmPassword" placeholder="请确认密码" type="password" show-password />
+                <el-input v-model="form.confirmPassword" :placeholder="$t('register.confirmPasswordPlaceholder')" type="password" />
               </div>
 
               <!-- 验证码部分保持相同 -->
@@ -84,28 +84,28 @@
                 style="display: flex; align-items: center; margin-top: 20px; width: 100%; gap: 10px;">
                 <div class="input-box" style="width: calc(100% - 130px); margin-top: 0;">
                   <img loading="lazy" alt="" class="input-icon" src="@/assets/login/shield.png" />
-                  <el-input v-model="form.captcha" placeholder="请输入验证码" style="flex: 1;" />
+                  <el-input v-model="form.captcha" :placeholder="$t('register.captchaPlaceholder')" style="flex: 1;" />
                 </div>
-                <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="验证码"
+                <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" :alt="$t('register.captchaAlt')"
                   style="width: 150px; height: 40px; cursor: pointer;" @click="fetchCaptcha" />
               </div>
 
               <!-- 修改底部链接 -->
               <div style="font-weight: 400;font-size: 14px;text-align: left;color: #5778ff;margin-top: 20px;">
-                <div style="cursor: pointer;" @click="goToLogin">已有账号？立即登录</div>
+                <div style="cursor: pointer;" @click="goToLogin">{{$t('register.toLogin')}}</div>
               </div>
             </form>
           </div>
 
           <!-- 修改按钮文本 -->
-          <div class="login-btn" @click="register">立即注册</div>
+          <div class="login-btn" @click="register">{{$t('register.registerNow')}}</div>
 
           <!-- 保持相同的协议声明 -->
           <div style="font-size: 14px;color: #979db1;">
-            注册即同意
-            <div style="display: inline-block;color: #5778FF;cursor: pointer;">《用户协议》</div>
-            和
-            <div style="display: inline-block;color: #5778FF;cursor: pointer;">《隐私政策》</div>
+            {{$t('register.agreePrefix')}}
+            <div style="display: inline-block;color: #5778FF;cursor: pointer;">{{$t('register.userAgreement')}}</div>
+            {{$t('register.and')}}
+            <div style="display: inline-block;color: #5778FF;cursor: pointer;">{{$t('register.privacyPolicy')}}</div>
           </div>
         </div>
       </el-main>

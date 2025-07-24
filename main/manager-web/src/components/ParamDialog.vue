@@ -20,22 +20,22 @@
       </div>
 
       <el-form :model="form" :rules="rules" ref="form" label-width="110px" label-position="left" class="param-form">
-        <el-form-item label="参数编码" prop="paramCode" class="form-item">
-          <el-input v-model="form.paramCode" placeholder="请输入参数编码" class="custom-input"></el-input>
+        <el-form-item :label="$t('paramDialog.paramCode')" prop="paramCode" class="form-item">
+          <el-input v-model="form.paramCode" :placeholder="$t('paramDialog.paramCodePlaceholder')" class="custom-input"></el-input>
         </el-form-item>
 
-        <el-form-item label="参数值" prop="paramValue" class="form-item">
-          <el-input v-model="form.paramValue" placeholder="请输入参数值" class="custom-input"></el-input>
+        <el-form-item :label="$t('paramDialog.paramValue')" prop="paramValue" class="form-item">
+          <el-input v-model="form.paramValue" :placeholder="$t('paramDialog.paramValuePlaceholder')" class="custom-input"></el-input>
         </el-form-item>
 
-        <el-form-item label="值类型" prop="valueType" class="form-item">
-          <el-select v-model="form.valueType" placeholder="请选择值类型" class="custom-select">
+        <el-form-item :label="$t('paramDialog.valueType')" prop="valueType" class="form-item">
+          <el-select v-model="form.valueType" :placeholder="$t('paramDialog.valueTypePlaceholder')" class="custom-select">
             <el-option v-for="item in valueTypeOptions" :key="item.value" :label="item.label" :value="item.value"/>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="备注" prop="remark" class="form-item remark-item">
-          <el-input type="textarea" v-model="form.remark" placeholder="请输入备注" :rows="3" class="custom-textarea"></el-input>
+        <el-form-item :label="$t('paramDialog.remark')" prop="remark" class="form-item remark-item">
+          <el-input type="textarea" v-model="form.remark" :placeholder="$t('paramDialog.remarkPlaceholder')" :rows="3" class="custom-textarea"></el-input>
         </el-form-item>
       </el-form>
 
@@ -46,10 +46,10 @@
           class="save-btn"
           :loading="saving"
           :disabled="saving">
-          保存
+          {{$t('paramDialog.save')}}
         </el-button>
         <el-button @click="cancel" class="cancel-btn">
-          取消
+          {{$t('paramDialog.cancel')}}
         </el-button>
       </div>
     </div>
@@ -83,21 +83,21 @@ export default {
       dialogKey: Date.now(),
       saving: false,
       valueTypeOptions: [
-        { value: 'string', label: '字符串(string)' },
-        { value: 'number', label: '数字(number)' },
-        { value: 'boolean', label: '布尔值(boolean)' },
-        { value: 'array', label: '数组(array)' },
-        { value: 'json', label: 'JSON对象(json)' }
+        { value: 'string', label: this.$t('paramDialog.string') },
+        { value: 'number', label: this.$t('paramDialog.number') },
+        { value: 'boolean', label: this.$t('paramDialog.boolean') },
+        { value: 'array', label: this.$t('paramDialog.array') },
+        { value: 'json', label: this.$t('paramDialog.json') }
       ],
       rules: {
         paramCode: [
-          { required: true, message: "请输入参数编码", trigger: "blur" }
+          { required: true, message: this.$t('paramDialog.paramCodeRequired'), trigger: "blur" }
         ],
         paramValue: [
-          { required: true, message: "请输入参数值", trigger: "blur" }
+          { required: true, message: this.$t('paramDialog.paramValueRequired'), trigger: "blur" }
         ],
         valueType: [
-          { required: true, message: "请选择值类型", trigger: "change" }
+          { required: true, message: this.$t('paramDialog.valueTypeRequired'), trigger: "change" }
         ]
       }
     };

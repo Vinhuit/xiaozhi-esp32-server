@@ -3,7 +3,7 @@
     <HeaderBar />
 
     <div class="operation-bar">
-      <h2 class="page-title">角色配置</h2>
+      <h2 class="page-title">{{$t('roleConfig.title')}}</h2>
     </div>
 
     <div class="main-wrapper">
@@ -18,10 +18,10 @@
               <div class="header-actions">
                 <div class="hint-text">
                   <img loading="lazy" src="@/assets/home/info.png" alt="">
-                  <span>保存配置后，需要重启设备，新的配置才会生效。</span>
+                  <span>{{$t('roleConfig.saveHint')}}</span>
                 </div>
-                <el-button type="primary" class="save-btn" @click="saveConfig">保存配置</el-button>
-                <el-button class="reset-btn" @click="resetConfig">重置</el-button>
+                <el-button type="primary" class="save-btn" @click="saveConfig">{{$t('roleConfig.saveConfig')}}</el-button>
+                <el-button class="reset-btn" @click="resetConfig">{{$t('roleConfig.reset')}}</el-button>
                 <button class="custom-close-btn" @click="goToHome">
                   ×
                 </button>
@@ -33,10 +33,10 @@
               <div class="form-content">
                 <div class="form-grid">
                   <div class="form-column">
-                    <el-form-item label="助手昵称：">
+                    <el-form-item :label="$t('roleConfig.agentName')">
                       <el-input v-model="form.agentName" class="form-input" maxlength="10" />
                     </el-form-item>
-                    <el-form-item label="角色模版：">
+                    <el-form-item :label="$t('roleConfig.roleTemplate')">
                       <div class="template-container">
                         <div v-for="(template, index) in templates" :key="`template-${index}`" class="template-item"
                           :class="{ 'template-loading': loadingTemplate }" @click="selectTemplate(template)">
@@ -44,39 +44,39 @@
                         </div>
                       </div>
                     </el-form-item>
-                    <el-form-item label="角色介绍：">
-                      <el-input type="textarea" rows="9" resize="none" placeholder="请输入内容" v-model="form.systemPrompt"
+                    <el-form-item :label="$t('roleConfig.roleDescription')">
+                      <el-input type="textarea" rows="9" resize="none" :placeholder="$t('roleConfig.pleaseEnterContent')" v-model="form.systemPrompt"
                         maxlength="2000" show-word-limit class="form-textarea" />
                     </el-form-item>
 
-                    <el-form-item label="记忆：">
+                    <el-form-item :label="$t('roleConfig.memory')">
                       <el-input type="textarea" rows="6" resize="none" v-model="form.summaryMemory" maxlength="2000"
                         show-word-limit class="form-textarea"
                         :disabled="form.model.memModelId !== 'Memory_mem_local_short'" />
                     </el-form-item>
-                    <el-form-item label="语言编码：" style="display: none;">
-                      <el-input v-model="form.langCode" placeholder="请输入语言编码，如：zh_CN" maxlength="10" show-word-limit
+                    <el-form-item :label="$t('roleConfig.langCode')" style="display: none;">
+                      <el-input v-model="form.langCode" :placeholder="$t('roleConfig.pleaseEnterLangCode')" maxlength="10" show-word-limit
                         class="form-input" />
                     </el-form-item>
-                    <el-form-item label="交互语种：" style="display: none;">
-                      <el-input v-model="form.language" placeholder="请输入交互语种，如：中文" maxlength="10" show-word-limit
+                    <el-form-item :label="$t('roleConfig.interactionLanguage')" style="display: none;">
+                      <el-input v-model="form.language" :placeholder="$t('roleConfig.pleaseEnterInteractionLanguage')" maxlength="10" show-word-limit
                         class="form-input" />
                     </el-form-item>
                   </div>
                   <div class="form-column">
                     <div class="model-row">
-                      <el-form-item label="语音活动检测(VAD)" class="model-item">
+                      <el-form-item :label="$t('roleConfig.vadModel')" class="model-item">
                         <div class="model-select-wrapper">
-                          <el-select v-model="form.model.vadModelId" filterable placeholder="请选择" class="form-select"
+                          <el-select v-model="form.model.vadModelId" filterable :placeholder="$t('roleConfig.pleaseSelect')" class="form-select"
                             @change="handleModelChange('VAD', $event)">
                             <el-option v-for="(item, optionIndex) in modelOptions['VAD']"
                               :key="`option-vad-${optionIndex}`" :label="item.label" :value="item.value" />
                           </el-select>
                         </div>
                       </el-form-item>
-                      <el-form-item label="语音识别(ASR)" class="model-item">
+                      <el-form-item :label="$t('roleConfig.asrModel')" class="model-item">
                         <div class="model-select-wrapper">
-                          <el-select v-model="form.model.asrModelId" filterable placeholder="请选择" class="form-select"
+                          <el-select v-model="form.model.asrModelId" filterable :placeholder="$t('roleConfig.pleaseSelect')" class="form-select"
                             @change="handleModelChange('ASR', $event)">
                             <el-option v-for="(item, optionIndex) in modelOptions['ASR']"
                               :key="`option-asr-${optionIndex}`" :label="item.label" :value="item.value" />
@@ -84,10 +84,10 @@
                         </div>
                       </el-form-item>
                     </div>
-                    <el-form-item v-for="(model, index) in models.slice(2)" :key="`model-${index}`" :label="model.label"
+                    <el-form-item v-for="(model, index) in models.slice(2)" :key="`model-${index}`" :label="$t(model.label)"
                       class="model-item">
                       <div class="model-select-wrapper">
-                        <el-select v-model="form.model[model.key]" filterable placeholder="请选择" class="form-select"
+                        <el-select v-model="form.model[model.key]" filterable :placeholder="$t('roleConfig.pleaseSelect')" class="form-select"
                           @change="handleModelChange(model.type, $event)">
                           <el-option v-for="(item, optionIndex) in modelOptions[model.type]"
                             :key="`option-${index}-${optionIndex}`" :label="item.label" :value="item.value" />
@@ -96,7 +96,7 @@
                           <el-tooltip v-for="func in currentFunctions" :key="func.name" effect="dark" placement="top"
                             popper-class="custom-tooltip">
                             <div slot="content">
-                              <div><strong>功能名称:</strong> {{ func.name }}</div>
+                              <div><strong>{{$t('roleConfig.functionName')}}</strong> {{ func.name }}</div>
                             </div>
                             <div class="icon-dot" :style="{ backgroundColor: getFunctionColor(func.name) }">
                               {{ func.name.charAt(0) }}
@@ -104,20 +104,20 @@
                           </el-tooltip>
                           <el-button class="edit-function-btn" @click="openFunctionDialog"
                             :class="{ 'active-btn': showFunctionDialog }">
-                            编辑功能
+                            {{$t('roleConfig.editFunction')}}
                           </el-button>
                         </div>
                         <div v-if="model.type === 'Memory' && form.model.memModelId !== 'Memory_nomem'"
                           class="chat-history-options">
                           <el-radio-group v-model="form.chatHistoryConf" @change="updateChatHistoryConf">
-                            <el-radio-button :label="1">上报文字</el-radio-button>
-                            <el-radio-button :label="2">上报文字+语音</el-radio-button>
+                            <el-radio-button :label="1">{{$t('roleConfig.reportText')}}</el-radio-button>
+                            <el-radio-button :label="2">{{$t('roleConfig.reportTextAndVoice')}}</el-radio-button>
                           </el-radio-group>
                         </div>
                       </div>
                     </el-form-item>
-                    <el-form-item label="角色音色">
-                      <el-select v-model="form.ttsVoiceId" placeholder="请选择" class="form-select">
+                    <el-form-item :label="$t('roleConfig.roleVoice')">
+                      <el-select v-model="form.ttsVoiceId" :placeholder="$t('roleConfig.pleaseSelect')" class="form-select">
                         <el-option v-for="(item, index) in voiceOptions" :key="`voice-${index}`" :label="item.label"
                           :value="item.value" />
                       </el-select>
@@ -167,13 +167,13 @@ export default {
         }
       },
       models: [
-        { label: '语音活动检测(VAD)', key: 'vadModelId', type: 'VAD' },
-        { label: '语音识别(ASR)', key: 'asrModelId', type: 'ASR' },
-        { label: '大语言模型(LLM)', key: 'llmModelId', type: 'LLM' },
-        { label: '视觉大模型(VLLM)', key: 'vllmModelId', type: 'VLLM' },
-        { label: '意图识别(Intent)', key: 'intentModelId', type: 'Intent' },
-        { label: '记忆(Memory)', key: 'memModelId', type: 'Memory' },
-        { label: '语音合成(TTS)', key: 'ttsModelId', type: 'TTS' },
+        { label: 'Voice Activity Detection (VAD)', key: 'vadModelId', type: 'VAD' },
+        { label: 'Automatic Speech Recognition (ASR)', key: 'asrModelId', type: 'ASR' },
+        { label: 'Large Language Model (LLM)', key: 'llmModelId', type: 'LLM' },
+        { label: 'Vision Large Model (VLLM)', key: 'vllmModelId', type: 'VLLM' },
+        { label: 'Intent Recognition (Intent)', key: 'intentModelId', type: 'Intent' },
+        { label: 'Memory', key: 'memModelId', type: 'Memory' },
+        { label: 'Text-to-Speech (TTS)', key: 'ttsModelId', type: 'TTS' },
       ],
       modelOptions: {},
       templates: [],

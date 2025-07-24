@@ -3,11 +3,11 @@
     <HeaderBar/>
 
     <div class="operation-bar">
-      <h2 class="page-title">设备管理</h2>
+      <h2 class="page-title">{{$t('deviceManagement.title')}}</h2>
       <div class="right-operations">
-        <el-input placeholder="请输入设备型号或Mac地址查询" v-model="searchKeyword" class="search-input"
+        <el-input :placeholder="$t('deviceManagement.searchPlaceholder')" v-model="searchKeyword" class="search-input"
                   @keyup.enter.native="handleSearch" clearable/>
-        <el-button class="btn-search" @click="handleSearch">搜索</el-button>
+        <el-button class="btn-search" @click="handleSearch">{{$t('deviceManagement.search')}}</el-button>
       </div>
     </div>
 
@@ -19,21 +19,21 @@
                       :header-cell-class-name="headerCellClassName" v-loading="loading"
                       element-loading-text="拼命加载中"
                       element-loading-spinner="el-icon-loading" element-loading-background="rgba(255, 255, 255, 0.7)">
-              <el-table-column label="选择" align="center" width="120">
+              <el-table-column :label="$t('deviceManagement.select')" align="center" width="120">
                 <template slot-scope="scope">
                   <el-checkbox v-model="scope.row.selected"></el-checkbox>
                 </template>
               </el-table-column>
-              <el-table-column label="设备型号" prop="model" align="center">
+              <el-table-column :label="$t('deviceManagement.deviceModel')" prop="model" align="center">
                 <template slot-scope="scope">
                   {{ getFirmwareTypeName(scope.row.model) }}
                 </template>
               </el-table-column>
-              <el-table-column label="固件版本" prop="firmwareVersion" align="center"></el-table-column>
-              <el-table-column label="Mac地址" prop="macAddress" align="center"></el-table-column>
-              <el-table-column label="绑定时间" prop="bindTime" align="center"></el-table-column>
-              <el-table-column label="最近对话" prop="lastConversation" align="center"></el-table-column>
-              <el-table-column label="备注" align="center">
+              <el-table-column :label="$t('deviceManagement.firmwareVersion')" prop="firmwareVersion" align="center"></el-table-column>
+              <el-table-column :label="$t('deviceManagement.macAddress')" prop="macAddress" align="center"></el-table-column>
+              <el-table-column :label="$t('deviceManagement.bindTime')" prop="bindTime" align="center"></el-table-column>
+              <el-table-column :label="$t('deviceManagement.lastConversation')" prop="lastConversation" align="center"></el-table-column>
+              <el-table-column :label="$t('deviceManagement.remark')" align="center">
                 <template #default="{ row }">
                   <el-input
                       v-show="row.isEdit"
@@ -56,16 +56,16 @@
                 </span>
                 </template>
               </el-table-column>
-              <el-table-column label="OTA升级" align="center">
+              <el-table-column :label="$t('deviceManagement.otaUpgrade')" align="center">
                 <template slot-scope="scope">
                   <el-switch v-model="scope.row.otaSwitch" size="mini" active-color="#13ce66" inactive-color="#ff4949"
                              @change="handleOtaSwitchChange(scope.row)"></el-switch>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" align="center">
+              <el-table-column :label="$t('deviceManagement.operation')" align="center">
                 <template slot-scope="scope">
                   <el-button size="mini" type="text" @click="handleUnbind(scope.row.device_id)">
-                    解绑
+                    {{$t('deviceManagement.unbind')}}
                   </el-button>
                 </template>
               </el-table-column>
@@ -74,29 +74,29 @@
             <div class="table_bottom">
               <div class="ctrl_btn">
                 <el-button size="mini" type="primary" class="select-all-btn" @click="handleSelectAll">
-                  {{ isAllSelected ? '取消全选' : '全选' }}
+                  {{ isAllSelected ? $t('deviceManagement.deselectAll') : $t('deviceManagement.selectAll') }}
                 </el-button>
                 <el-button type="success" size="mini" class="add-device-btn" @click="handleAddDevice">
-                  验证码绑定
+                  {{$t('deviceManagement.codeBind')}}
                 </el-button>
                 <el-button type="success" size="mini" class="add-device-btn" @click="handleManualAddDevice">
-                  手动添加
+                  {{$t('deviceManagement.manualAdd')}}
                 </el-button>
-                <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteSelected">解绑</el-button>
+                <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteSelected">{{$t('deviceManagement.unbind')}}</el-button>
               </div>
               <div class="custom-pagination">
                 <el-select v-model="pageSize" @change="handlePageSizeChange" class="page-size-select">
-                  <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item}条/页`" :value="item">
+                  <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item} ${$t('deviceManagement.itemsPerPage')}`" :value="item">
                   </el-option>
                 </el-select>
-                <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">首页</button>
-                <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">上一页</button>
+                <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">{{$t('deviceManagement.firstPage')}}</button>
+                <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">{{$t('deviceManagement.prevPage')}}</button>
                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                         :class="{ active: page === currentPage }" @click="goToPage(page)">
                   {{ page }}
                 </button>
-                <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">下一页</button>
-                <span class="total-text">共{{ deviceList.length }}条记录</span>
+                <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">{{$t('deviceManagement.nextPage')}}</button>
+                <span class="total-text">{{$t('deviceManagement.totalRecords',{total: deviceList.length})}}</span>
               </div>
             </div>
           </el-card>

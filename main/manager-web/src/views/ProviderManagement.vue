@@ -3,23 +3,23 @@
     <HeaderBar />
 
     <div class="operation-bar">
-      <h2 class="page-title">字段管理</h2>
+      <h2 class="page-title">{{$t('Field Management')}}</h2>
       <div class="right-operations">
         <el-dropdown trigger="click" @command="handleSelectModelType" @visible-change="handleDropdownVisibleChange">
           <el-button class="category-btn">
-            类别筛选 {{ selectedModelTypeLabel }}<i class="el-icon-arrow-down el-icon--right"
+            {{$t('Category Filter')}} {{ selectedModelTypeLabel }}<i class="el-icon-arrow-down el-icon--right"
               :class="{ 'rotate-down': DropdownVisible }"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="">全部</el-dropdown-item>
+            <el-dropdown-item command="">{{$t('All')}}</el-dropdown-item>
             <el-dropdown-item v-for="item in modelTypes" :key="item.value" :command="item.value">
               {{ item.label }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <el-input placeholder="请输入供应器名称查询" v-model="searchName" class="search-input" @keyup.enter.native="handleSearch"
+        <el-input :placeholder="$t('Please enter provider name to search')" v-model="searchName" class="search-input" @keyup.enter.native="handleSearch"
           clearable />
-        <el-button class="btn-search" @click="handleSearch">搜索</el-button>
+        <el-button class="btn-search" @click="handleSearch">{{$t('Search')}}</el-button>
       </div>
     </div>
 
@@ -28,24 +28,24 @@
         <div class="content-area">
           <el-card class="provider-card" shadow="never">
             <el-table ref="providersTable" :data="filteredProvidersList" class="transparent-table" v-loading="loading"
-              element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+              :element-loading-text="$t('Loading...')" element-loading-spinner="el-icon-loading"
               element-loading-background="rgba(255, 255, 255, 0.7)" :header-cell-class-name="headerCellClassName">
-              <el-table-column label="选择" align="center" width="120">
+              <el-table-column :label="$t('Select')" align="center" width="120">
                 <template slot-scope="scope">
                   <el-checkbox v-model="scope.row.selected"></el-checkbox>
                 </template>
               </el-table-column>
 
-              <el-table-column label="类别" prop="modelType" align="center" width="200">
+              <el-table-column :label="$t('Category')" prop="modelType" align="center" width="200">
                 <template slot="header" slot-scope="scope">
                   <el-dropdown trigger="click" @command="handleSelectModelType"
                     @visible-change="isDropdownOpen = $event">
                     <span class="dropdown-trigger" :class="{ 'active': isDropdownOpen }">
-                      类别{{ selectedModelTypeLabel }} <i class="dropdown-arrow"
+                      {{$t('Category')}}{{ selectedModelTypeLabel }} <i class="dropdown-arrow"
                         :class="{ 'is-active': isDropdownOpen }"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item command="">全部</el-dropdown-item>
+                      <el-dropdown-item command="">{{$t('All')}}</el-dropdown-item>
                       <el-dropdown-item v-for="item in modelTypes" :key="item.value" :command="item.value">
                         {{ item.label }}
                       </el-dropdown-item>
@@ -58,25 +58,25 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="供应器编码" prop="providerCode" align="center" width="150"></el-table-column>
-              <el-table-column label="名称" prop="name" align="center"></el-table-column>
-              <el-table-column label="字段配置" align="center">
+              <el-table-column :label="$t('Provider Code')" prop="providerCode" align="center" width="150"></el-table-column>
+              <el-table-column :label="$t('Name')" prop="name" align="center"></el-table-column>
+              <el-table-column :label="$t('Field Configuration')" align="center">
                 <template slot-scope="scope">
                   <el-popover placement="top-start" width="400" trigger="hover">
                     <div v-for="field in scope.row.fields" :key="field.key" class="field-item">
                       <span class="field-label">{{ field.label }}:</span>
                       <span class="field-type">{{ field.type }}</span>
-                      <span v-if="isSensitiveField(field.key)" class="sensitive-tag">敏感</span>
+                      <span v-if="isSensitiveField(field.key)" class="sensitive-tag">{{$t('Sensitive')}}</span>
                     </div>
-                    <el-button slot="reference" size="mini" type="text">查看字段</el-button>
+                    <el-button slot="reference" size="mini" type="text">{{$t('View Fields')}}</el-button>
                   </el-popover>
                 </template>
               </el-table-column>
-              <el-table-column label="排序" prop="sort" align="center" width="80"></el-table-column>
-              <el-table-column label="操作" align="center" width="180">
+              <el-table-column :label="$t('Sort')" prop="sort" align="center" width="80"></el-table-column>
+              <el-table-column :label="$t('Actions')" align="center" width="180">
                 <template slot-scope="scope">
-                  <el-button size="mini" type="text" @click="editProvider(scope.row)">编辑</el-button>
-                  <el-button size="mini" type="text" @click="deleteProvider(scope.row)">删除</el-button>
+                  <el-button size="mini" type="text" @click="editProvider(scope.row)">{{$t('Edit')}}</el-button>
+                  <el-button size="mini" type="text" @click="deleteProvider(scope.row)">{{$t('Delete')}}</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -84,31 +84,31 @@
             <div class="table_bottom">
               <div class="ctrl_btn">
                 <el-button size="mini" type="primary" class="select-all-btn" @click="handleSelectAll">
-                  {{ isAllSelected ? '取消全选' : '全选' }}
+                  {{ isAllSelected ? $t('Deselect All') : $t('Select All') }}
                 </el-button>
-                <el-button size="mini" type="success" @click="showAddDialog">新增</el-button>
-                <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteSelectedProviders">删除
+                <el-button size="mini" type="success" @click="showAddDialog">{{$t('Add')}}</el-button>
+                <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteSelectedProviders">{{$t('Delete')}}
                 </el-button>
               </div>
               <div class="custom-pagination">
                 <el-select v-model="pageSize" @change="handlePageSizeChange" class="page-size-select">
-                  <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item}条/页`" :value="item">
+                  <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item} ${$t('per page')}`" :value="item">
                   </el-option>
                 </el-select>
                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">
-                  首页
+                  {{$t('First Page')}}
                 </button>
                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">
-                  上一页
+                  {{$t('Previous Page')}}
                 </button>
                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                   :class="{ active: page === currentPage }" @click="goToPage(page)">
                   {{ page }}
                 </button>
                 <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">
-                  下一页
+                  {{$t('Next Page')}}
                 </button>
-                <span class="total-text">共{{ total }}条记录</span>
+                <span class="total-text">{{$t('Total')}}{{ total }}{{$t('records')}}</span>
               </div>
             </div>
           </el-card>
@@ -140,14 +140,14 @@ export default {
       searchModelType: "",
       providersList: [],
       modelTypes: [
-        { value: "ASR", label: "语音识别" },
-        { value: "TTS", label: "语音合成" },
-        { value: "LLM", label: "大语言模型" },
-        { value: "VLLM", label: "视觉大语言模型" },
-        { value: "Intent", label: "意图识别" },
-        { value: "Memory", label: "记忆模块" },
-        { value: "VAD", label: "语音活动检测" },
-        { value: "Plugin", label: "插件工具" }
+        { value: "ASR", label: this.$t('ASR') },
+        { value: "TTS", label: this.$t('TTS') },
+        { value: "LLM", label: this.$t('LLM') },
+        { value: "VLLM", label: this.$t('VLLM') },
+        { value: "Intent", label: this.$t('Intent Recognition') },
+        { value: "Memory", label: this.$t('Memory Module') },
+        { value: "VAD", label: this.$t('Voice Activity Detection') },
+        { value: "Plugin", label: this.$t('Plugin Tool') }
       ],
       currentPage: 1,
       loading: false,
@@ -155,7 +155,7 @@ export default {
       pageSizeOptions: [10, 20, 50, 100],
       total: 0,
       dialogVisible: false,
-      dialogTitle: "新增供应器",
+      dialogTitle: this.$t('Add Provider'),
       isAllSelected: false,
       isDropdownOpen: false,
       sensitive_keys: ["api_key", "personal_access_token", "access_token", "token", "secret", "access_key_secret", "secret_key"],
@@ -175,7 +175,7 @@ export default {
   },
   computed: {
     selectedModelTypeLabel() {
-      if (!this.searchModelType) return "（全部）";
+      if (!this.searchModelType) return this.$t('(All)');
       const selectedType = this.modelTypes.find(item => item.value === this.searchModelType);
       return selectedType ? `（${selectedType.label}）` : "";
     },
@@ -199,18 +199,6 @@ export default {
     },
     filteredProvidersList() {
       return this.providersList;
-
-      // let list = this.providersList.filter(item => {
-      //   const nameMatch = item.name.toLowerCase().includes(this.searchName.toLowerCase());
-      //   const typeMatch = !this.searchModelType || item.model_type === this.searchModelType;
-      //   return nameMatch && typeMatch;
-      // });
-
-      // list.sort((a, b) => a.sort - b.sort);
-
-      // // 分页处理
-      // const start = (this.currentPage - 1) * this.pageSize;
-      // return list.slice(start, start + this.pageSize);
     }
   },
   methods: {
@@ -237,7 +225,7 @@ export default {
             this.total = data.data.total;
           } else {
             this.$message.error({
-              message: data.msg || '获取参数列表失败'
+              message: data.msg || this.$t('Failed to get parameter list')
             });
           }
         }
@@ -259,7 +247,7 @@ export default {
       });
     },
     showAddDialog() {
-      this.dialogTitle = "新增供应器";
+      this.dialogTitle = this.$t('Add Provider');
       this.providerForm = {
         id: null,
         modelType: "",
@@ -271,7 +259,7 @@ export default {
       this.dialogVisible = true;
     },
     editProvider(row) {
-      this.dialogTitle = "编辑供应器";
+      this.dialogTitle = this.$t('Edit Provider');
       this.providerForm = {
         ...row,
         fields: JSON.parse(JSON.stringify(row.fields))
@@ -287,7 +275,7 @@ export default {
           if (data.code === 0) {
             this.fetchProviders(); // 刷新表格
             this.$message.success({
-              message: "修改成功",
+              message: this.$t('Successfully updated'),
               showClose: true
             });
           }
@@ -298,7 +286,7 @@ export default {
           if (data.code === 0) {
             this.fetchProviders(); // 刷新表格
             this.$message.success({
-              message: "新增成功",
+              message: this.$t('Successfully added'),
               showClose: true
             });
             this.total += 1;
@@ -313,7 +301,7 @@ export default {
       const selectedRows = this.providersList.filter(row => row.selected);
       if (selectedRows.length === 0) {
         this.$message.warning({
-          message: "请先选择需要删除的供应器",
+          message: this.$t('Please select providers to delete first'),
           showClose: true
         });
         return;
@@ -324,9 +312,9 @@ export default {
       const providers = Array.isArray(row) ? row : [row];
       const providerCount = providers.length;
 
-      this.$confirm(`确定要删除选中的${providerCount}个供应器吗？`, '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('Are you sure you want to delete the selected {count} provider(s)?', { count: providerCount }), this.$t('Warning'), {
+        confirmButtonText: this.$t('Confirm'),
+        cancelButtonText: this.$t('Cancel'),
         type: 'warning',
       }).then(() => {
         const ids = providers.map(provider => provider.id);
@@ -337,12 +325,12 @@ export default {
             this.fetchProviders(); // 刷新表格
 
             this.$message.success({
-              message: `成功删除${providerCount}个参数`,
+              message: this.$t('Successfully deleted {count} parameter(s)', { count: providerCount }),
               showClose: true
             });
           } else {
             this.$message.error({
-              message: data.msg || '删除失败，请重试',
+              message: data.msg || this.$t('Delete failed, please try again'),
               showClose: true
             });
           }
@@ -350,7 +338,7 @@ export default {
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消删除',
+          message: this.$t('Deletion cancelled'),
           showClose: true,
           duration: 1000
         });
@@ -400,7 +388,6 @@ export default {
     },
     goNext() {
       if (this.currentPage < this.pageCount) {
-        console.log("this.currentPage", this.currentPage);
         this.currentPage++;
         this.fetchProviders();
       }

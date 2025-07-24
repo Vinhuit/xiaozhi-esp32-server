@@ -3,13 +3,13 @@
         <HeaderBar />
 
         <div class="operation-bar">
-            <h2 class="page-title">字典管理</h2>
+            <h2 class="page-title">{{$t('dictManagement.title')}}</h2>
             <div class="action-group">
                 <div class="search-group">
-                    <el-input placeholder="请输入字典值标签查询" v-model="search" class="search-input" clearable
+                    <el-input :placeholder="$t('dictManagement.searchPlaceholder')" v-model="search" class="search-input" clearable
                         @keyup.enter.native="handleSearch" style="width: 240px" />
                     <el-button class="btn-search" @click="handleSearch">
-                        搜索
+                        {{$t('dictManagement.search')}}
                     </el-button>
                 </div>
             </div>
@@ -21,22 +21,22 @@
                 <!-- 左侧字典类型列表 -->
                 <div class="dict-type-panel">
                     <div class="dict-type-header">
-                        <el-button type="success" size="mini" @click="showAddDictTypeDialog">新增字典类型</el-button>
+                        <el-button type="success" size="mini" @click="showAddDictTypeDialog">{{$t('dictManagement.addDictType')}}</el-button>
                         <el-button type="danger" size="mini" @click="batchDeleteDictType"
                             :disabled="selectedDictTypes.length === 0">
-                            批量删除字典类型
+                            {{$t('dictManagement.batchDeleteDictType')}}
                         </el-button>
                     </div>
                     <el-table ref="dictTypeTable" :data="dictTypeList" style="width: 100%" v-loading="dictTypeLoading"
-                        element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+                        :element-loading-text="$t('dictManagement.loading')" element-loading-spinner="el-icon-loading"
                         element-loading-background="rgba(255, 255, 255, 0.7)" @row-click="handleDictTypeRowClick"
                         @selection-change="handleDictTypeSelectionChange" :row-class-name="tableRowClassName"
                         class="dict-type-table">
                         <el-table-column type="selection" width="55" align="center"></el-table-column>
-                        <el-table-column label="字典类型名称" prop="dictName" align="center"></el-table-column>
-                        <el-table-column label="操作" width="100" align="center">
+                        <el-table-column :label="$t('dictManagement.dictTypeName')" prop="dictName" align="center"></el-table-column>
+                        <el-table-column :label="$t('dictManagement.operation')" width="100" align="center">
                             <template slot-scope="scope">
-                                <el-button type="text" size="mini" @click.stop="editDictType(scope.row)">编辑</el-button>
+                                <el-button type="text" size="mini" @click.stop="editDictType(scope.row)">{{$t('dictManagement.edit')}}</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -46,27 +46,27 @@
                 <div class="content-area">
                     <el-card class="dict-data-card" shadow="never">
                         <el-table ref="dictDataTable" :data="dictDataList" style="width: 100%"
-                            v-loading="dictDataLoading" element-loading-text="拼命加载中"
+                            v-loading="dictDataLoading" :element-loading-text="$t('dictManagement.loading')"
                             element-loading-spinner="el-icon-loading"
                             element-loading-background="rgba(255, 255, 255, 0.7)" class="data-table"
                             header-row-class-name="table-header">
-                            <el-table-column label="选择" align="center" width="55">
+                            <el-table-column :label="$t('dictManagement.select')" align="center" width="55">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model="scope.row.selected"></el-checkbox>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="字典标签" prop="dictLabel" align="center"></el-table-column>
-                            <el-table-column label="字典值" prop="dictValue" align="center"></el-table-column>
-                            <el-table-column label="排序" prop="sort" align="center"></el-table-column>
-                            <el-table-column label="操作" align="center" width="180px">
+                            <el-table-column :label="$t('dictManagement.dictLabel')" prop="dictLabel" align="center"></el-table-column>
+                            <el-table-column :label="$t('dictManagement.dictValue')" prop="dictValue" align="center"></el-table-column>
+                            <el-table-column :label="$t('dictManagement.sort')" prop="sort" align="center"></el-table-column>
+                            <el-table-column :label="$t('dictManagement.operation')" align="center" width="180px">
                                 <template slot-scope="scope">
                                     <el-button type="text" size="mini" @click="editDictData(scope.row)"
                                         class="edit-btn">
-                                        修改
+                                        {{$t('dictManagement.modify')}}
                                     </el-button>
                                     <el-button type="text" size="mini" @click="deleteDictData(scope.row)"
                                         class="delete-btn">
-                                        删除
+                                        {{$t('dictManagement.delete')}}
                                     </el-button>
                                 </template>
                             </el-table-column>
@@ -74,36 +74,36 @@
                         <div class="table-footer">
                             <div class="batch-actions">
                                 <el-button size="mini" type="primary" @click="selectAllDictData">
-                                    {{ isAllDictDataSelected ? '取消全选' : '全选' }}
+                                    {{ isAllDictDataSelected ? $t('dictManagement.deselectAll') : $t('dictManagement.selectAll') }}
                                 </el-button>
                                 <el-button type="success" size="mini" @click="showAddDictDataDialog" class="add-btn">
-                                    新增字典数据
+                                    {{$t('dictManagement.addDictData')}}
                                 </el-button>
                                 <el-button size="mini" type="danger" icon="el-icon-delete" @click="batchDeleteDictData">
-                                    批量删除字典数据
+                                    {{$t('dictManagement.batchDeleteDictData')}}
                                 </el-button>
                             </div>
                             <div class="custom-pagination">
                                 <el-select v-model="pageSize" @change="handlePageSizeChange" class="page-size-select">
-                                    <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item}条/页`"
+                                    <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item} ${$t('dictManagement.itemsPerPage')}`"
                                         :value="item">
                                     </el-option>
                                 </el-select>
 
                                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">
-                                    首页
+                                    {{$t('dictManagement.firstPage')}}
                                 </button>
                                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">
-                                    上一页
+                                    {{$t('dictManagement.prevPage')}}
                                 </button>
                                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                                     :class="{ active: page === currentPage }" @click="goToPage(page)">
                                     {{ page }}
                                 </button>
                                 <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">
-                                    下一页
+                                    {{$t('dictManagement.nextPage')}}
                                 </button>
-                                <span class="total-text">共{{ total }}条记录</span>
+                                <span class="total-text">{{$t('dictManagement.totalRecords',{total})}}</span>
                             </div>
                         </div>
                     </el-card>

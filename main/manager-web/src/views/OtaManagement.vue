@@ -3,11 +3,11 @@
         <HeaderBar />
 
         <div class="operation-bar">
-            <h2 class="page-title">固件管理</h2>
+            <h2 class="page-title">{{$t('otaManagement.title')}}</h2>
             <div class="right-operations">
-                <el-input placeholder="请输入固件名称查询" v-model="searchName" class="search-input"
+                <el-input :placeholder="$t('otaManagement.firmwareSearchPlaceholder')" v-model="searchName" class="search-input"
                     @keyup.enter.native="handleSearch" clearable />
-                <el-button class="btn-search" @click="handleSearch">搜索</el-button>
+                <el-button class="btn-search" @click="handleSearch">{{$t('otaManagement.search')}}</el-button>
             </div>
         </div>
 
@@ -16,44 +16,44 @@
                 <div class="content-area">
                     <el-card class="params-card" shadow="never">
                         <el-table ref="paramsTable" :data="paramsList" class="transparent-table" v-loading="loading"
-                            element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+                            :element-loading-text="$t('otaManagement.loading')" element-loading-spinner="el-icon-loading"
                             element-loading-background="rgba(255, 255, 255, 0.7)"
                             :header-cell-class-name="headerCellClassName">
-                            <el-table-column label="选择" align="center" width="120">
+                            <el-table-column :label="$t('otaManagement.select')" align="center" width="120">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model="scope.row.selected"></el-checkbox>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="固件名称" prop="firmwareName" align="center"></el-table-column>
-                            <el-table-column label="固件类型" prop="type" align="center">
+                            <el-table-column :label="$t('otaManagement.firmwareName')" prop="firmwareName" align="center"></el-table-column>
+                            <el-table-column :label="$t('otaManagement.firmwareType')" prop="type" align="center">
                                 <template slot-scope="scope">
                                     {{ getFirmwareTypeName(scope.row.type) }}
                                 </template>
                             </el-table-column>
-                            <el-table-column label="版本号" prop="version" align="center"></el-table-column>
-                            <el-table-column label="文件大小" prop="size" align="center">
+                            <el-table-column :label="$t('otaManagement.version')" prop="version" align="center"></el-table-column>
+                            <el-table-column :label="$t('otaManagement.fileSize')" prop="size" align="center">
                                 <template slot-scope="scope">
                                     {{ formatFileSize(scope.row.size) }}
                                 </template>
                             </el-table-column>
-                            <el-table-column label="备注" prop="remark" align="center"
+                            <el-table-column :label="$t('otaManagement.remark')" prop="remark" align="center"
                                 show-overflow-tooltip></el-table-column>
-                            <el-table-column label="创建时间" prop="createDate" align="center">
+                            <el-table-column :label="$t('otaManagement.createTime')" prop="createDate" align="center">
                                 <template slot-scope="scope">
                                     {{ formatDate(scope.row.createDate) }}
                                 </template>
                             </el-table-column>
-                            <el-table-column label="更新时间" prop="updateDate" align="center">
+                            <el-table-column :label="$t('otaManagement.updateTime')" prop="updateDate" align="center">
                                 <template slot-scope="scope">
                                     {{ formatDate(scope.row.updateDate) }}
                                 </template>
                             </el-table-column>
-                            <el-table-column label="操作" align="center">
+                            <el-table-column :label="$t('otaManagement.operation')" align="center">
                                 <template slot-scope="scope">
                                     <el-button size="mini" type="text"
-                                        @click="downloadFirmware(scope.row)">下载</el-button>
-                                    <el-button size="mini" type="text" @click="editParam(scope.row)">编辑</el-button>
-                                    <el-button size="mini" type="text" @click="deleteParam(scope.row)">删除</el-button>
+                                        @click="downloadFirmware(scope.row)">{{$t('otaManagement.download')}}</el-button>
+                                    <el-button size="mini" type="text" @click="editParam(scope.row)">{{$t('otaManagement.edit')}}</el-button>
+                                    <el-button size="mini" type="text" @click="deleteParam(scope.row)">{{$t('otaManagement.delete')}}</el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -61,33 +61,33 @@
                         <div class="table_bottom">
                             <div class="ctrl_btn">
                                 <el-button size="mini" type="primary" class="select-all-btn" @click="handleSelectAll">
-                                    {{ isAllSelected ? '取消全选' : '全选' }}
+                                    {{ isAllSelected ? $t('otaManagement.deselectAll') : $t('otaManagement.selectAll') }}
                                 </el-button>
                                 <el-button size="mini" type="success" @click="showAddDialog"
-                                    style="background: #5bc98c;border: None;">新增</el-button>
+                                    style="background: #5bc98c;border: None;">{{$t('otaManagement.add')}}</el-button>
                                 <el-button size="mini" type="danger" icon="el-icon-delete"
-                                    @click="deleteSelectedParams">删除</el-button>
+                                    @click="deleteSelectedParams">{{$t('otaManagement.delete')}}</el-button>
                             </div>
                             <div class="custom-pagination">
                                 <el-select v-model="pageSize" @change="handlePageSizeChange" class="page-size-select">
-                                    <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item}条/页`"
+                                    <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item} ${$t('otaManagement.itemsPerPage')}`"
                                         :value="item">
                                     </el-option>
                                 </el-select>
                                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">
-                                    首页
+                                    {{$t('otaManagement.firstPage')}}
                                 </button>
                                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">
-                                    上一页
+                                    {{$t('otaManagement.prevPage')}}
                                 </button>
                                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                                     :class="{ active: page === currentPage }" @click="goToPage(page)">
                                     {{ page }}
                                 </button>
                                 <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">
-                                    下一页
+                                    {{$t('otaManagement.nextPage')}}
                                 </button>
-                                <span class="total-text">共{{ total }}条记录</span>
+                                <span class="total-text">{{$t('otaManagement.totalRecords',{total})}}</span>
                             </div>
                         </div>
                     </el-card>

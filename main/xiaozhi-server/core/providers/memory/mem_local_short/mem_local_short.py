@@ -7,84 +7,84 @@ from config.config_loader import get_project_dir
 from config.manage_api_client import save_mem_local_short
 from core.utils.util import check_model_key
 
-
 short_term_memory_prompt = """
-# 时空记忆编织者
+# Spatiotemporal Memory Weaver
 
-## 核心使命
-构建可生长的动态记忆网络，在有限空间内保留关键信息的同时，智能维护信息演变轨迹
-根据对话记录，总结user的重要信息，以便在未来的对话中提供更个性化的服务
+## Core Mission
+Build a dynamic, expandable memory network that retains key information within a limited space, while intelligently tracking the evolution of information.
+Summarize important user information from the conversation history to enable more personalized service in future conversations.
 
-## 记忆法则
-### 1. 三维度记忆评估（每次更新必执行）
-| 维度       | 评估标准                  | 权重分 |
-|------------|---------------------------|--------|
-| 时效性     | 信息新鲜度（按对话轮次） | 40%    |
-| 情感强度   | 含💖标记/重复提及次数     | 35%    |
-| 关联密度   | 与其他信息的连接数量      | 25%    |
+## Memory Rules
+### 1. Three-Dimensional Memory Evaluation (to be executed with each update)
+| Dimension        | Evaluation Criteria                     | Weight |
+|------------------|----------------------------------------|--------|
+| Timeliness       | Freshness of information (by turn)      | 40%    |
+| Emotional Intensity | Contains 💖 tag / Number of mentions | 35%    |
+| Connection Density | Number of connections to other info   | 25%    |
 
-### 2. 动态更新机制
-**名字变更处理示例：**
-原始记忆："曾用名": ["张三"], "现用名": "张三丰"
-触发条件：当检测到「我叫X」「称呼我Y」等命名信号时
-操作流程：
-1. 将旧名移入"曾用名"列表
-2. 记录命名时间轴："2024-02-15 14:32:启用张三丰"
-3. 在记忆立方追加：「从张三到张三丰的身份蜕变」
+### 2. Dynamic Update Mechanism
+**Example of Name Change Handling:**
+Original memory: `"Former Names": ["Zhang San"], "Current Name": "Zhang Sanfeng"`
+Trigger condition: When a naming signal like "My name is X" or "Call me Y" is detected
+Process:
+1. Move the old name into the "Former Names" list
+2. Record the name change on the timeline: "2024-02-15 14:32: Activated Zhang Sanfeng"
+3. Add to the memory cube: "Identity transformation from Zhang San to Zhang Sanfeng"
 
-### 3. 空间优化策略
-- **信息压缩术**：用符号体系提升密度
-  - ✅"张三丰[北/软工/🐱]"
-  - ❌"北京软件工程师，养猫"
-- **淘汰预警**：当总字数≥900时触发
-  1. 删除权重分<60且3轮未提及的信息
-  2. 合并相似条目（保留时间戳最近的）
+### 3. Space Optimization Strategy
+- **Information Compression:** Use symbolic systems to increase density  
+  - ✅ "Zhang Sanfeng[Beijing/Software/🐱]"
+  - ❌ "Beijing software engineer, cat owner"
+- **Elimination Warning:** Trigger when total word count ≥ 900  
+  1. Delete items with score < 60 not mentioned in 3 rounds
+  2. Merge similar items (keep the latest timestamp)
 
-## 记忆结构
-输出格式必须为可解析的json字符串，不需要解释、注释和说明，保存记忆时仅从对话提取信息，不要混入示例内容
+## Memory Structure
+The output format **must** be a parsable JSON string, with no explanations, comments, or examples. When saving memory, extract only information from the conversation—**do not mix in example content**.
 ```json
 {
-  "时空档案": {
-    "身份图谱": {
-      "现用名": "",
-      "特征标记": [] 
+  "Spatiotemporal Archive": {
+    "Identity Map": {
+      "Current Name": "",
+      "Feature Tags": []
     },
-    "记忆立方": [
+    "Memory Cube": [
       {
-        "事件": "入职新公司",
-        "时间戳": "2024-03-20",
-        "情感值": 0.9,
-        "关联项": ["下午茶"],
-        "保鲜期": 30 
+        "Event": "Joined a new company",
+        "Timestamp": "2024-03-20",
+        "Emotional Value": 0.9,
+        "Related Items": ["Afternoon Tea"],
+        "Shelf Life": 30
       }
     ]
   },
-  "关系网络": {
-    "高频话题": {"职场": 12},
-    "暗线联系": [""]
+  "Relationship Network": {
+    "Frequent Topics": {"Workplace": 12},
+    "Hidden Connections": [""]
   },
-  "待响应": {
-    "紧急事项": ["需立即处理的任务"], 
-    "潜在关怀": ["可主动提供的帮助"]
+  "Pending Responses": {
+    "Urgent Matters": ["Tasks that require immediate action"],
+    "Potential Care": ["Help that can be proactively provided"]
   },
-  "高光语录": [
-    "最打动人心的瞬间，强烈的情感表达，user的原话"
+  "Highlight Quotes": [
+    "The most touching moments, strong emotional expressions, user's original words"
   ]
 }
 ```
 """
 
 short_term_memory_prompt_only_content = """
-你是一个经验丰富的记忆总结者，擅长将对话内容进行总结摘要，遵循以下规则：
-1、总结user的重要信息，以便在未来的对话中提供更个性化的服务
-2、不要重复总结，不要遗忘之前记忆，除非原来的记忆超过了1800字内，否则不要遗忘、不要压缩用户的历史记忆
-3、用户操控的设备音量、播放音乐、天气、退出、不想对话等和用户本身无关的内容，这些信息不需要加入到总结中
-4、聊天内容中的今天的日期时间、今天的天气情况与用户事件无关的数据，这些信息如果当成记忆存储会影响后序对话，这些信息不需要加入到总结中
-5、不要把设备操控的成果结果和失败结果加入到总结中，也不要把用户的一些废话加入到总结中
-6、不要为了总结而总结，如果用户的聊天没有意义，请返回原来的历史记录也是可以的
-7、只需要返回总结摘要，严格控制在1800字内
-8、不要包含代码、xml，不需要解释、注释和说明，保存记忆时仅从对话提取信息，不要混入示例内容
+You are an experienced memory summarizer, skilled at summarizing conversation content according to the following rules:
+1. Summarize important information about the user to provide more personalized service in future conversations.
+2. Do not repeat summaries, do not forget previous memories unless the total memory exceeds 1800 characters; otherwise, do not forget or compress the user's historical memory.
+3. Information such as device volume changes, playing music, weather, exit, or the user's unwillingness to chat, etc.—which are not related to the user themselves—should NOT be included in the summary.
+4. Data in the chat such as today's date, time, and weather that are unrelated to user events should NOT be included in the summary, as storing this information as memory may affect future conversations.
+5. Do NOT include device operation results (success or failure) or meaningless user chatter in the summary.
+6. Do not summarize just for the sake of summarizing; if the user's chat is meaningless, it is acceptable to just return the original history.
+7. Only return the summary, strictly keeping it within 1800 characters.
+8. Do NOT include code, XML, explanations, comments, or sample content—only extract information from the conversation.
 """
+
 
 
 def extract_json_data(json_code):

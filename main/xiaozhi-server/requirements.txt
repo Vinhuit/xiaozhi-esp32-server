@@ -30,8 +30,10 @@ baidu-aip==4.16.13
 chardet==5.2.0
 aioconsole==0.8.1
 markitdown==0.1.1
-mcp-proxy==0.8.0
+mcp-proxy==0.8.2
 PyJWT==2.8.0
 psutil==7.0.0
 portalocker==2.10.1
 Jinja2==3.1.6
+uv
+elevenlabs

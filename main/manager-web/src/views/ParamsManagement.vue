@@ -3,11 +3,11 @@
         <HeaderBar />
 
         <div class="operation-bar">
-            <h2 class="page-title">参数管理</h2>
+            <h2 class="page-title">{{$t('paramsManagement.title')}}</h2>
             <div class="right-operations">
-                <el-input placeholder="请输入参数编码或备注查询" v-model="searchCode" class="search-input"
+                <el-input :placeholder="$t('paramsManagement.paramSearchPlaceholder')" v-model="searchCode" class="search-input"
                     @keyup.enter.native="handleSearch" clearable />
-                <el-button class="btn-search" @click="handleSearch">搜索</el-button>
+                <el-button class="btn-search" @click="handleSearch">{{$t('paramsManagement.search')}}</el-button>
             </div>
         </div>
 
@@ -16,33 +16,32 @@
                 <div class="content-area">
                     <el-card class="params-card" shadow="never">
                         <el-table ref="paramsTable" :data="paramsList" class="transparent-table" v-loading="loading"
-                            element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+                            :element-loading-text="$t('paramsManagement.loading')" element-loading-spinner="el-icon-loading"
                             element-loading-background="rgba(255, 255, 255, 0.7)"
                             :header-cell-class-name="headerCellClassName">
-                            <el-table-column label="选择" align="center" width="120">
+                            <el-table-column :label="$t('paramsManagement.select')" align="center" width="120">
                                 <template slot-scope="scope">
                                     <el-checkbox v-model="scope.row.selected"></el-checkbox>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="参数编码" prop="paramCode" align="center"></el-table-column>
-                            <el-table-column label="参数值" prop="paramValue" align="center" show-overflow-tooltip>
+                            <el-table-column :label="$t('paramsManagement.paramCode')" prop="paramCode" align="center"></el-table-column>
+                            <el-table-column :label="$t('paramsManagement.paramValue')" prop="paramValue" align="center" show-overflow-tooltip>
                                 <template slot-scope="scope">
                                     <div v-if="isSensitiveParam(scope.row.paramCode)">
-                                        <span v-if="!scope.row.showValue">{{ maskSensitiveValue(scope.row.paramValue)
-                                        }}</span>
+                                        <span v-if="!scope.row.showValue">{{ maskSensitiveValue(scope.row.paramValue) }}</span>
                                         <span v-else>{{ scope.row.paramValue }}</span>
                                         <el-button size="mini" type="text" @click="toggleSensitiveValue(scope.row)">
-                                            {{ scope.row.showValue ? '隐藏' : '查看' }}
+                                            {{ scope.row.showValue ? $t('paramsManagement.hide') : $t('paramsManagement.view') }}
                                         </el-button>
                                     </div>
                                     <span v-else>{{ scope.row.paramValue }}</span>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="备注" prop="remark" align="center"></el-table-column>
-                            <el-table-column label="操作" align="center">
+                            <el-table-column :label="$t('paramsManagement.remark')" prop="remark" align="center"></el-table-column>
+                            <el-table-column :label="$t('paramsManagement.operation')" align="center">
                                 <template slot-scope="scope">
-                                    <el-button size="mini" type="text" @click="editParam(scope.row)">编辑</el-button>
-                                    <el-button size="mini" type="text" @click="deleteParam(scope.row)">删除</el-button>
+                                    <el-button size="mini" type="text" @click="editParam(scope.row)">{{$t('paramsManagement.edit')}}</el-button>
+                                    <el-button size="mini" type="text" @click="deleteParam(scope.row)">{{$t('paramsManagement.delete')}}</el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -50,32 +49,32 @@
                         <div class="table_bottom">
                             <div class="ctrl_btn">
                                 <el-button size="mini" type="primary" class="select-all-btn" @click="handleSelectAll">
-                                    {{ isAllSelected ? '取消全选' : '全选' }}
+                                    {{ isAllSelected ? $t('paramsManagement.deselectAll') : $t('paramsManagement.selectAll') }}
                                 </el-button>
-                                <el-button size="mini" type="success" @click="showAddDialog">新增</el-button>
+                                <el-button size="mini" type="success" @click="showAddDialog">{{$t('paramsManagement.add')}}</el-button>
                                 <el-button size="mini" type="danger" icon="el-icon-delete"
-                                    @click="deleteSelectedParams">删除</el-button>
+                                    @click="deleteSelectedParams">{{$t('paramsManagement.delete')}}</el-button>
                             </div>
                             <div class="custom-pagination">
                                 <el-select v-model="pageSize" @change="handlePageSizeChange" class="page-size-select">
-                                    <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item}条/页`"
+                                    <el-option v-for="item in pageSizeOptions" :key="item" :label="`${item}${$t('paramsManagement.itemsPerPage')}`"
                                         :value="item">
                                     </el-option>
                                 </el-select>
                                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goFirst">
-                                    首页
+                                    {{$t('paramsManagement.firstPage')}}
                                 </button>
                                 <button class="pagination-btn" :disabled="currentPage === 1" @click="goPrev">
-                                    上一页
+                                    {{$t('paramsManagement.prevPage')}}
                                 </button>
                                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                                     :class="{ active: page === currentPage }" @click="goToPage(page)">
                                     {{ page }}
                                 </button>
                                 <button class="pagination-btn" :disabled="currentPage === pageCount" @click="goNext">
-                                    下一页
+                                    {{$t('paramsManagement.nextPage')}}
                                 </button>
-                                <span class="total-text">共{{ total }}条记录</span>
+                                <span class="total-text">{{$t('paramsManagement.totalRecords', { total })}}</span>
                             </div>
                         </div>
                     </el-card>

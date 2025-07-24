@@ -69,14 +69,14 @@ export default {
       window.checkCDNCacheStatus = () => {
         this.showCacheViewer = true;
       };
-
-      // 在控制台输出提示信息
+      
+      // Console output for CDN cache tool
       console.info(
-        '%c[小智服务] CDN缓存检查工具已加载',
+        '%c[Smart Service] CDN cache check tool loaded',
         'color: #409EFF; font-weight: bold;'
       );
       console.info(
-        '按下 Alt+C 组合键或在控制台运行 checkCDNCacheStatus() 可以查看CDN缓存状态'
+        'Press Alt+C or run checkCDNCacheStatus() in the console to view CDN cache status'
       );
 
       // 检查Service Worker状态
@@ -108,54 +108,51 @@ export default {
           const registrations = await navigator.serviceWorker.getRegistrations();
           if (registrations.length > 0) {
             console.info(
-              '%c[小智服务] Service Worker已注册',
+              '%c[Smart Service] Service Worker registered',
               'color: #67C23A; font-weight: bold;'
             );
-
-            // 输出缓存状态到控制台
+            // Output cache status to console
             setTimeout(async () => {
               const hasCaches = await logCacheStatus();
               if (!hasCaches) {
                 console.info(
-                  '%c[小智服务] 还未检测到缓存，请刷新页面或等待缓存建立',
+                  '%c[Smart Service] No cache detected yet, please refresh or wait for cache to build',
                   'color: #E6A23C; font-weight: bold;'
                 );
-
-                // 开发环境下提供额外提示
+                // Extra tips for development
                 if (process.env.NODE_ENV === 'development') {
                   console.info(
-                    '%c[小智服务] 在开发环境中，Service Worker可能无法正常初始化缓存',
+                    '%c[Smart Service] In development, Service Worker may not initialize cache properly',
                     'color: #E6A23C; font-weight: bold;'
                   );
-                  console.info('请尝试以下方法检查Service Worker是否生效:');
-                  console.info('1. 在开发者工具的Application/Application标签页中查看Service Worker状态');
-                  console.info('2. 在开发者工具的Application/Cache/Cache Storage中查看缓存内容');
-                  console.info('3. 使用生产构建(npm run build)并通过HTTP服务器访问以测试完整功能');
+                  console.info('Try the following to check if Service Worker is working:');
+                  console.info('1. Check Service Worker status in DevTools > Application > Service Workers');
+                  console.info('2. Check cache content in DevTools > Application > Cache > Cache Storage');
+                  console.info('3. Use production build (npm run build) and access via HTTP server to test full functionality');
                 }
               }
             }, 2000);
           } else {
             console.info(
-              '%c[小智服务] Service Worker未注册，CDN资源可能无法缓存',
+              '%c[Smart Service] Service Worker not registered, CDN resources may not be cached',
               'color: #F56C6C; font-weight: bold;'
             );
-
             if (process.env.NODE_ENV === 'development') {
               console.info(
-                '%c[小智服务] 在开发环境中，这是正常现象',
+                '%c[Smart Service] This is normal in development',
                 'color: #E6A23C; font-weight: bold;'
               );
-              console.info('Service Worker通常只在生产环境中生效');
-              console.info('要测试Service Worker功能:');
-              console.info('1. 运行npm run build构建生产版本');
-              console.info('2. 通过HTTP服务器访问构建后的页面');
+              console.info('Service Worker usually only works in production');
+              console.info('To test Service Worker functionality:');
+              console.info('1. Run npm run build to build production version');
+              console.info('2. Access the built page via HTTP server');
             }
           }
         } catch (error) {
-          console.error('检查Service Worker状态失败:', error);
+          console.error('Failed to check Service Worker status:', error);
         }
       } else {
-        console.warn('当前浏览器不支持Service Worker，CDN资源缓存功能不可用');
+        console.warn('Current browser does not support Service Worker, CDN cache unavailable');
       }
     }
   }

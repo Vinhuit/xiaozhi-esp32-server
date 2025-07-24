@@ -14,25 +14,25 @@
           @click="goHome">
           <img loading="lazy" alt="" src="@/assets/header/robot.png"
             :style="{ filter: $route.path === '/home' || $route.path === '/role-config' || $route.path === '/device-management' ? 'brightness(0) invert(1)' : 'None' }" />
-          智能体管理
+          {{$t('smartManagement')}}
         </div>
         <div v-if="isSuperAdmin" class="equipment-management" :class="{ 'active-tab': $route.path === '/model-config' }"
           @click="goModelConfig">
           <img loading="lazy" alt="" src="@/assets/header/model_config.png"
             :style="{ filter: $route.path === '/model-config' ? 'brightness(0) invert(1)' : 'None' }" />
-          模型配置
+          {{$t('modelConfig.title')}}
         </div>
         <div v-if="isSuperAdmin" class="equipment-management"
           :class="{ 'active-tab': $route.path === '/user-management' }" @click="goUserManagement">
           <img loading="lazy" alt="" src="@/assets/header/user_management.png"
             :style="{ filter: $route.path === '/user-management' ? 'brightness(0) invert(1)' : 'None' }" />
-          用户管理
+          {{$t('userManagement.title')}}
         </div>
         <div v-if="isSuperAdmin" class="equipment-management"
           :class="{ 'active-tab': $route.path === '/ota-management' }" @click="goOtaManagement">
           <img loading="lazy" alt="" src="@/assets/header/firmware_update.png"
             :style="{ filter: $route.path === '/ota-management' ? 'brightness(0) invert(1)' : 'None' }" />
-          OTA管理
+          {{$t('otaManagement.title')}}
         </div>
         <el-dropdown v-if="isSuperAdmin" trigger="click" class="equipment-management more-dropdown"
           :class="{ 'active-tab': $route.path === '/dict-management' || $route.path === '/params-management' || $route.path === '/provider-management' || $route.path === '/server-side-management' }"
@@ -40,21 +40,21 @@
           <span class="el-dropdown-link">
             <img loading="lazy" alt="" src="@/assets/header/param_management.png"
               :style="{ filter: $route.path === '/dict-management' || $route.path === '/params-management' || $route.path === '/provider-management' || $route.path === '/server-side-management' ? 'brightness(0) invert(1)' : 'None' }" />
-            参数字典
+            {{$t('paramDict')}}
             <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': paramDropdownVisible }"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="goParamManagement">
-              参数管理
+              {{$t('paramManagement')}}
             </el-dropdown-item>
             <el-dropdown-item @click.native="goDictManagement">
-              字典管理
+              {{$t('dictManagement.title')}}
             </el-dropdown-item>
             <el-dropdown-item @click.native="goProviderManagement">
-              字段管理
+              {{$t('providerManagement.title')}}
             </el-dropdown-item>
             <el-dropdown-item @click.native="goServerSideManagement">
-              服务端管理
+              {{$t('serverSideManagement')}}
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -63,7 +63,7 @@
       <!-- 右侧元素 -->
       <div class="header-right">
         <div class="search-container" v-if="$route.path === '/home' && !(isSuperAdmin && isSmallScreen)">
-          <el-input v-model="search" placeholder="输入名称搜索.." class="custom-search-input"
+          <el-input v-model="search" :placeholder="$t('searchPlaceholder')" class="custom-search-input"
             @keyup.enter.native="handleSearch">
             <i slot="suffix" class="el-icon-search search-icon" @click="handleSearch"></i>
           </el-input>
@@ -71,12 +71,12 @@
         <img loading="lazy" alt="" src="@/assets/home/avatar.png" class="avatar-img" />
         <el-dropdown trigger="click" class="user-dropdown" @visible-change="handleUserDropdownVisibleChange">
           <span class="el-dropdown-link">
-            {{ userInfo.username || '加载中...' }}
+            {{ userInfo.username || $t('loading') }}
             <i class="el-icon-arrow-down el-icon--right" :class="{ 'rotate-down': userDropdownVisible }"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="showChangePasswordDialog">修改密码</el-dropdown-item>
-            <el-dropdown-item @click.native="handleLogout">退出登录</el-dropdown-item>
+            <el-dropdown-item @click.native="showChangePasswordDialog">{{$t('changePassword')}}</el-dropdown-item>
+            <el-dropdown-item @click.native="handleLogout">{{$t('logout')}}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -182,7 +182,7 @@ export default {
       } catch (error) {
         console.error('正则表达式创建失败:', error);
         this.$message.error({
-          message: '搜索关键词格式不正确',
+          message: this.$t('searchKeywordError'),
           showClose: true
         });
       }
@@ -197,13 +197,13 @@ export default {
         // 调用 Vuex 的 logout action
         await this.logout();
         this.$message.success({
-          message: '退出登录成功',
+          message: this.$t('logoutSuccess'),
           showClose: true
         });
       } catch (error) {
         console.error('退出登录失败:', error);
         this.$message.error({
-          message: '退出登录失败，请重试',
+          message: this.$t('logoutFail'),
           showClose: true
         });
       }

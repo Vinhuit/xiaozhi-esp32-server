@@ -2,7 +2,7 @@ import requests
 from core.utils.util import check_model_key
 from core.providers.tts.base import TTSProviderBase
 from config.logger import setup_logging
-
+# from vinorm import TTSnorm
 TAG = __name__
 logger = setup_logging()
 
@@ -20,7 +20,7 @@ class TTSProvider(TTSProviderBase):
         self.response_format = config.get("format", "wav")
         self.audio_file_type = config.get("format", "wav")
 
-        # 处理空字符串的情况
+        # Handle empty strings
         speed = config.get("speed", "1.0")
         self.speed = float(speed) if speed else 1.0
 
@@ -28,12 +28,26 @@ class TTSProvider(TTSProviderBase):
         model_key_msg = check_model_key("TTS", self.api_key)
         if model_key_msg:
             logger.bind(tag=TAG).error(model_key_msg)
-
+    # def _normalize_text(self, text):
+    #     return (
+    #         TTSnorm(text, unknown=False, lower=False, rule=True)
+    #         .replace("..", ".")
+    #         .replace("!.", "!")
+    #         .replace("?.", "?")
+    #         .replace(" .", ".")
+    #         .replace(" ,", ",")
+    #         .replace('"', "")
+    #         .replace("'", "")
+    #         .replace("AI", "Ây Ai")
+    #         .replace("A.I", "Ây Ai")
+    #     )
     async def text_to_speak(self, text, output_file):
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        # if self.normalize_text and self.lang == "vi":
+        #     text = self._normalize_text(text)
         data = {
             "model": self.model,
             "input": text,
@@ -50,5 +64,5 @@ class TTSProvider(TTSProviderBase):
                 return response.content
         else:
             raise Exception(
-                f"OpenAI TTS请求失败: {response.status_code} - {response.text}"
+                f"OpenAI TTS request failed: {response.status_code} - {response.text}"
             )

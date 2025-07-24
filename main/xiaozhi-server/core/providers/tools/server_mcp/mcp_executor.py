@@ -20,7 +20,24 @@ class ServerMCPExecutor(ToolExecutor):
             self.mcp_manager = ServerMCPManager(self.conn)
             await self.mcp_manager.initialize_servers()
             self._initialized = True
+  
+  
+    
+    # def process_result(self, result):
+    #     # Decode unicode and newlines
+    #     if isinstance(result, str):
+    #         try:
+    #             result = result.encode('utf-8').decode('unicode_escape')
+    #         except Exception:
+    #             pass
+    #     # Try to pretty print JSON
+    #     try:
+    #         parsed = json.loads(result)
+    #         return json.dumps(parsed, indent=2, ensure_ascii=False)
+    #     except Exception:
+    #         return str(result)
 
+    
     async def execute(
         self, conn, tool_name: str, arguments: Dict[str, Any]
     ) -> ActionResponse:
@@ -37,8 +54,10 @@ class ServerMCPExecutor(ToolExecutor):
             if tool_name.startswith("mcp_"):
                 actual_tool_name = tool_name[4:]
 
+            # result = await self.mcp_manager.execute_tool(actual_tool_name, arguments)
             result = await self.mcp_manager.execute_tool(actual_tool_name, arguments)
-
+            # readable_result = self.process_result(result)
+            # print("Tool result:\n", readable_result)
             return ActionResponse(action=Action.REQLLM, result=str(result))
 
         except ValueError as e:

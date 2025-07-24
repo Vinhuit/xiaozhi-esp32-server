@@ -1,19 +1,19 @@
 <template>
   <el-drawer :visible.sync="dialogVisible" direction="rtl" size="80%" :wrapperClosable="false" :withHeader="false">
-    <!-- 自定义标题区域 -->
+    <!-- Custom Title Area -->
     <div class="custom-header">
       <div class="header-left">
-        <h3 class="bold-title">功能管理</h3>
+        <h3 class="bold-title">Function Management</h3>
       </div>
       <button class="custom-close-btn" @click="closeDialog">×</button>
     </div>
 
     <div class="function-manager">
-      <!-- 左侧：未选功能 -->
+      <!-- Left: Unselected Functions -->
       <div class="function-column">
         <div class="column-header">
-          <h4 class="column-title">未选功能</h4>
-          <el-button type="text" @click="selectAll" class="select-all-btn">全选</el-button>
+          <h4 class="column-title">Unselected Functions</h4>
+          <el-button type="text" @click="selectAll" class="select-all-btn">Select All</el-button>
         </div>
         <div class="function-list">
           <div v-if="unselected.length">
@@ -27,16 +27,16 @@
             </div>
           </div>
           <div v-else style="display: flex; justify-content: center; align-items: center;">
-            <el-empty description="没有更多的插件了" />
+            <el-empty description="No more plugins" />
           </div>
         </div>
       </div>
 
-      <!-- 中间：已选功能 -->
+      <!-- Center: Selected Functions -->
       <div class="function-column">
         <div class="column-header">
-          <h4 class="column-title">已选功能</h4>
-          <el-button type="text" @click="deselectAll" class="select-all-btn">全选</el-button>
+          <h4 class="column-title">Selected Functions</h4>
+          <el-button type="text" @click="deselectAll" class="select-all-btn">Select All</el-button>
         </div>
         <div class="function-list">
           <div v-if="selectedList.length > 0">
@@ -50,19 +50,19 @@
             </div>
           </div>
           <div v-else style="display: flex; justify-content: center; align-items: center;">
-            <el-empty description="请选择插件功能" />
+            <el-empty description="Select plugin function" />
           </div>
         </div>
       </div>
 
-      <!-- 右侧：参数配置 -->
+      <!-- Right: Parameter Configuration -->
       <div class="params-column">
-        <h4 v-if="currentFunction" class="column-title">参数配置 - {{ currentFunction.name }}</h4>
+        <h4 v-if="currentFunction" class="column-title">Parameter Configuration - {{ currentFunction.name }}</h4>
         <div v-if="currentFunction" class="params-container">
           <el-form :model="currentFunction" class="param-form">
-            <!-- 遍历 fieldsMeta，而不是 params 的 keys -->
+            <!-- Iterate over fieldsMeta rather than keys of params -->
             <div v-if="currentFunction.fieldsMeta.length == 0">
-              <el-empty :description="currentFunction.name + ' 无需配置参数'" />
+              <el-empty :description="currentFunction.name + ' No configuration needed'" />
             </div>
             <el-form-item v-for="field in currentFunction.fieldsMeta" :key="field.key" :label="field.label"
               class="param-item" :class="{ 'textarea-field': field.type === 'array' || field.type === 'json' }">
@@ -77,7 +77,7 @@
                 @change="val => handleParamChange(currentFunction, field.key, val)" />
 
               <!-- JSON -->
-              <el-input v-else-if="field.type === 'json'" type="textarea" :rows="6" placeholder="请输入合法的 JSON"
+              <el-input v-else-if="field.type === 'json'" type="textarea" :rows="6" placeholder="Enter valid JSON"
                 v-model="textCache[field.key]" @blur="flushJson(field)" />
 
               <!-- number -->
@@ -95,50 +95,50 @@
             </el-form-item>
           </el-form>
         </div>
-        <div v-else class="empty-tip">请选择已配置的功能进行参数设置</div>
+        <div v-else class="empty-tip">Select a configured function to set parameters</div>
       </div>
     </div>
 
-    <!-- MCP区域 -->
+    <!-- MCP Section -->
     <div class="mcp-access-point">
       <div class="mcp-container">
-        <!-- 左侧区域 -->
+        <!-- Left Section -->
         <div class="mcp-left">
           <div class="mcp-header">
-            <h3 class="bold-title">MCP接入点</h3>
+            <h3 class="bold-title">MCP Access Point</h3>
           </div>
           <div class="url-header">
             <div class="address-desc">
-              <span>以下是智能体的MCP接入点地址。</span>
+              <span>Below is the MCP access point address for the agent.</span>
               <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-enable.md"
-                target="_blank" class="doc-link">如何部署MCP接入点</a> &nbsp;&nbsp;|&nbsp;&nbsp;
+                target="_blank" class="doc-link">How to deploy the MCP access point</a> &nbsp;&nbsp;|&nbsp;&nbsp;
               <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mcp-endpoint-integration.md"
-                target="_blank" class="doc-link">如何接入MCP功能</a> &nbsp;
+                target="_blank" class="doc-link">How to integrate MCP functionality</a> &nbsp;
             </div>
           </div>
           <el-input v-model="mcpUrl" readonly class="url-input">
             <template #suffix>
               <el-button @click="copyUrl" class="inner-copy-btn" icon="el-icon-document-copy">
-                复制
+                Copy
               </el-button>
             </template>
           </el-input>
         </div>
 
-        <!-- 右侧区域 -->
+        <!-- Right Section -->
         <div class="mcp-right">
           <div class="mcp-header">
-            <h3 class="bold-title">接入点状态</h3>
+            <h3 class="bold-title">Access Point Status</h3>
           </div>
           <div class="status-container">
             <span class="status-indicator" :class="mcpStatus"></span>
             <span class="status-text">{{
-              mcpStatus === 'connected' ? '已连接' :
-                mcpStatus === 'loading' ? '加载中...' : '未连接'
+              mcpStatus === 'connected' ? 'Connected' :
+                mcpStatus === 'loading' ? 'Loading...' : 'Disconnected'
             }}</span>
             <button class="refresh-btn" @click="refreshStatus">
               <span class="refresh-icon">↻</span>
-              <span>刷新</span>
+              <span>Refresh</span>
             </button>
           </div>
           <div class="mcp-tools-list">
@@ -148,7 +148,7 @@
               </el-button>
             </div>
             <div v-else class="no-tools">
-              <span>暂无可用工具</span>
+              <span>No tools available</span>
             </div>
           </div>
         </div>
@@ -156,8 +156,8 @@
     </div>
 
     <div class="drawer-footer">
-      <el-button @click="closeDialog">取消</el-button>
-      <el-button type="primary" @click="saveSelection">保存配置</el-button>
+      <el-button @click="closeDialog">Cancel</el-button>
+      <el-button type="primary" @click="saveSelection">Save Configuration</el-button>
     </div>
   </el-drawer>
 </template>
@@ -193,7 +193,7 @@ export default {
         '#96CEB4', '#FFEEAD', '#D4A5A5', '#A2836E'
       ],
       tempFunctions: {},
-      // 添加一个标志位来跟踪是否已经保存
+      // Add a flag to track if it has been saved
       hasSaved: false,
       loading: false,
 
@@ -213,7 +213,7 @@ export default {
   watch: {
     currentFunction(newFn) {
       if (!newFn) return;
-      // 对每个字段，如果是 array 或 json，就在 textCache 里生成初始字符串
+      // For each field, if it's an array or json, generate an initial string in textCache
       newFn.fieldsMeta.forEach(f => {
         const v = newFn.params[f.key];
         if (f.type === 'array') {
@@ -231,20 +231,20 @@ export default {
     value(v) {
       this.dialogVisible = v;
       if (v) {
-        // 对话框打开时，初始化选中态
+        // Initialize selected state when the dialog opens
         this.selectedNames = this.functions.map(f => f.name);
-        // 把后端传来的 this.functions（带 params）merge 到 allFunctions 上
+        // Merge this.functions (with params) from backend into allFunctions
         this.functions.forEach(saved => {
           const idx = this.allFunctions.findIndex(f => f.name === saved.name);
           if (idx >= 0) {
-            // 保留用户之前在 saved.params 上的改动
+            // Retain user changes on saved.params
             this.allFunctions[idx].params = { ...saved.params };
           }
         });
-        // 右侧默认指向第一个
+        // Default to the first function on the right
         this.currentFunction = this.selectedList[0] || null;
 
-        // 加载MCP数据
+        // Load MCP data
         this.loadMcpAddress();
         this.loadMcpTools();
       }
@@ -257,20 +257,20 @@ export default {
     copyUrl() {
       const textarea = document.createElement('textarea');
       textarea.value = this.mcpUrl;
-      textarea.style.position = 'fixed';  // 防止页面滚动
+      textarea.style.position = 'fixed';  // Prevent page scrolling
       document.body.appendChild(textarea);
       textarea.select();
 
       try {
         const successful = document.execCommand('copy');
         if (successful) {
-          this.$message.success('已复制到剪贴板');
+          this.$message.success('Copied to clipboard');
         } else {
-          this.$message.error('复制失败，请手动复制');
+          this.$message.error('Copy failed, please copy manually');
         }
       } catch (err) {
-        this.$message.error('复制失败，请手动复制');
-        console.error('复制失败:', err);
+        this.$message.error('Copy failed, please copy manually');
+        console.error('Copy failed:', err);
       } finally {
         document.body.removeChild(textarea);
       }
@@ -281,29 +281,29 @@ export default {
       this.loadMcpTools();
     },
 
-    // 加载MCP接入点地址
+    // Load MCP access point address
     loadMcpAddress() {
       Api.agent.getAgentMcpAccessAddress(this.agentId, (res) => {
         if (res.data.code === 0) {
           this.mcpUrl = res.data.data || "";
         } else {
           this.mcpUrl = "";
-          console.error('获取MCP地址失败:', res.data.msg);
+          console.error('Failed to get MCP address:', res.data.msg);
         }
       });
     },
 
-    // 加载MCP工具列表
+    // Load MCP tool list
     loadMcpTools() {
       Api.agent.getAgentMcpToolsList(this.agentId, (res) => {
         if (res.data.code === 0) {
           this.mcpTools = res.data.data || [];
-          // 根据工具列表更新状态
+          // Update status based on tool list
           this.mcpStatus = this.mcpTools.length > 0 ? "connected" : "disconnected";
         } else {
           this.mcpTools = [];
           this.mcpStatus = "disconnected";
-          console.error('获取MCP工具列表失败:', res.data.msg);
+          console.error('Failed to get MCP tools list:', res.data.msg);
         }
       });
     },
@@ -327,7 +327,7 @@ export default {
         const obj = JSON.parse(text);
         this.handleParamChange(this.currentFunction, key, obj);
       } catch {
-        this.$message.error(`${this.currentFunction.name}的${key}字段格式错误：JSON格式有误`);
+        this.$message.error(`Error in ${this.currentFunction.name}'s ${key} field: Invalid JSON format`);
       }
     },
     handleFunctionClick(func) {
@@ -399,7 +399,7 @@ export default {
 
       this.$emit('update-functions', selected);
       this.dialogVisible = false;
-      // 通知父组件对话框已关闭且已保存
+      // Notify parent component that dialog is closed and saved
       this.$emit('dialog-closed', true);
     },
     getFunctionColor(name) {
@@ -409,7 +409,7 @@ export default {
     fieldRemark(field) {
       let description = (field && field.label) ? field.label : '';
       if (field.default) {
-        description += `（默认值：${field.default}）`;
+        description += ` (Default: ${field.default})`;
       }
       return description;
     },
@@ -590,7 +590,6 @@ export default {
   text-align: center;
 }
 
-
 .drawer-footer {
   position: absolute;
   bottom: 0;
@@ -748,17 +747,17 @@ export default {
 
     &.disconnected {
       background-color: #909399;
-      /* 灰色 - 未连接 */
+      /* Gray - Disconnected */
     }
 
     &.connected {
       background-color: #67C23A;
-      /* 绿色 - 已连接 */
+      /* Green - Connected */
     }
 
     &.loading {
       background-color: #E6A23C;
-      /* 橙色 - 加载中 */
+      /* Orange - Loading */
       animation: pulse 1.5s infinite;
     }
   }

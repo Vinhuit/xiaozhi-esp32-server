@@ -3,21 +3,17 @@ import wave
 import os
 import sys
 import io
-from config.logger import setup_logging
 from typing import Optional, Tuple, List
-from core.providers.asr.dto.dto import InterfaceType
-from core.providers.asr.base import ASRProviderBase
-
 import numpy as np
 import sherpa_onnx
-
-from modelscope.hub.file_download import model_file_download
+from config.logger import setup_logging
+from core.providers.asr.dto.dto import InterfaceType
+from core.providers.asr.base import ASRProviderBase
 
 TAG = __name__
 logger = setup_logging()
 
 
-# 捕获标准输出
 class CaptureOutput:
     def __enter__(self):
         self._output = io.StringIO()
@@ -28,8 +24,6 @@ class CaptureOutput:
         sys.stdout = self._original_stdout
         self.output = self._output.getvalue()
         self._output.close()
-
-        # 将捕获到的内容通过 logger 输出
         if self.output:
             logger.bind(tag=TAG).info(self.output.strip())
 
@@ -42,110 +36,101 @@ class ASRProvider(ASRProviderBase):
         self.output_dir = config.get("output_dir")
         self.delete_audio_file = delete_audio_file
 
-        # 确保输出目录存在
         os.makedirs(self.output_dir, exist_ok=True)
 
-        # 初始化模型文件路径
-        model_files = {
-            "model.int8.onnx": os.path.join(self.model_dir, "model.int8.onnx"),
-            "tokens.txt": os.path.join(self.model_dir, "tokens.txt"),
-        }
+        tokens_path = os.path.join(self.model_dir, "tokens.txt")
+        if not os.path.isfile(tokens_path):
+            raise FileNotFoundError(f"Missing tokens.txt at {tokens_path}")
 
-        # 下载并检查模型文件
-        try:
-            for file_name, file_path in model_files.items():
-                if not os.path.isfile(file_path):
-                    logger.bind(tag=TAG).info(f"正在下载模型文件: {file_name}")
-                    model_file_download(
-                        model_id="pengzhendong/sherpa-onnx-sense-voice-zh-en-ja-ko-yue",
-                        file_path=file_name,
-                        local_dir=self.model_dir,
-                    )
+        self.tokens_path = tokens_path
 
-                    if not os.path.isfile(file_path):
-                        raise FileNotFoundError(f"模型文件下载失败: {file_path}")
+        def find_model_file(substring: str):
+            for f in os.listdir(self.model_dir):
+                if substring in f.lower() and f.lower().endswith(".onnx"):
+                    return os.path.join(self.model_dir, f)
+            return None
 
-            self.model_path = model_files["model.int8.onnx"]
-            self.tokens_path = model_files["tokens.txt"]
+        encoder_path = find_model_file("encoder")
+        decoder_path = find_model_file("decoder")
+        joiner_path = find_model_file("joiner")
 
-        except Exception as e:
-            logger.bind(tag=TAG).error(f"模型文件处理失败: {str(e)}")
-            raise
+        # Fallback to single model file if no 3-part model found
+        single_model_path = None
+        if not (encoder_path and decoder_path and joiner_path):
+            for f in os.listdir(self.model_dir):
+                if f.lower().endswith(".onnx"):
+                    path = os.path.join(self.model_dir, f)
+                    if not any(x in f.lower() for x in ["encoder", "decoder", "joiner"]):
+                        single_model_path = path
+                        break
 
         with CaptureOutput():
-            self.model = sherpa_onnx.OfflineRecognizer.from_sense_voice(
-                model=self.model_path,
-                tokens=self.tokens_path,
-                num_threads=2,
-                sample_rate=16000,
-                feature_dim=80,
-                decoding_method="greedy_search",
-                debug=False,
-                use_itn=True,
-            )
+            if encoder_path and decoder_path and joiner_path:
+                logger.bind(tag=TAG).info("Using 3-part Transducer model")
+                self.model = sherpa_onnx.OfflineRecognizer.from_transducer(
+                    encoder=encoder_path,
+                    decoder=decoder_path,
+                    joiner=joiner_path,
+                    tokens=self.tokens_path,
+                    num_threads=2,
+                    sample_rate=16000,
+                    feature_dim=80,
+                    decoding_method="greedy_search",
+                    debug=False
+                )
+            elif single_model_path:
+                logger.bind(tag=TAG).info(f"Using single .onnx model: {os.path.basename(single_model_path)}")
+                self.model = sherpa_onnx.OfflineRecognizer.from_sense_voice(
+                    model=single_model_path,
+                    tokens=self.tokens_path,
+                    num_threads=2,
+                    sample_rate=16000,
+                    feature_dim=80,
+                    decoding_method="greedy_search",
+                    debug=False
+                )
+            else:
+                raise FileNotFoundError("No valid model found in model_dir")
 
     def read_wave(self, wave_filename: str) -> Tuple[np.ndarray, int]:
-        """
-        Args:
-        wave_filename:
-            Path to a wave file. It should be single channel and each sample should
-            be 16-bit. Its sample rate does not need to be 16kHz.
-        Returns:
-        Return a tuple containing:
-        - A 1-D array of dtype np.float32 containing the samples, which are
-        normalized to the range [-1, 1].
-        - sample rate of the wave file
-        """
-
         with wave.open(wave_filename) as f:
             assert f.getnchannels() == 1, f.getnchannels()
-            assert f.getsampwidth() == 2, f.getsampwidth()  # it is in bytes
+            assert f.getsampwidth() == 2, f.getsampwidth()
             num_samples = f.getnframes()
             samples = f.readframes(num_samples)
             samples_int16 = np.frombuffer(samples, dtype=np.int16)
-            samples_float32 = samples_int16.astype(np.float32)
-
-            samples_float32 = samples_float32 / 32768
+            samples_float32 = samples_int16.astype(np.float32) / 32768.0
             return samples_float32, f.getframerate()
 
     async def speech_to_text(
         self, opus_data: List[bytes], session_id: str, audio_format="opus"
     ) -> Tuple[Optional[str], Optional[str]]:
-        """语音转文本主处理逻辑"""
         file_path = None
         try:
-            # 保存音频文件
             start_time = time.time()
             if audio_format == "pcm":
                 pcm_data = opus_data
             else:
                 pcm_data = self.decode_opus(opus_data)
             file_path = self.save_audio_to_file(pcm_data, session_id)
-            logger.bind(tag=TAG).debug(
-                f"音频文件保存耗时: {time.time() - start_time:.3f}s | 路径: {file_path}"
-            )
+            logger.bind(tag=TAG).debug(f"Saved audio to {file_path} in {time.time() - start_time:.2f}s")
 
-            # 语音识别
             start_time = time.time()
             s = self.model.create_stream()
             samples, sample_rate = self.read_wave(file_path)
             s.accept_waveform(sample_rate, samples)
             self.model.decode_stream(s)
             text = s.result.text
-            logger.bind(tag=TAG).debug(
-                f"语音识别耗时: {time.time() - start_time:.3f}s | 结果: {text}"
-            )
-
+            logger.bind(tag=TAG).debug(f"ASR decoded in {time.time() - start_time:.2f}s: {text}")
             return text, file_path
 
         except Exception as e:
-            logger.bind(tag=TAG).error(f"语音识别失败: {e}", exc_info=True)
+            logger.bind(tag=TAG).error(f"Speech recognition failed: {e}", exc_info=True)
             return "", file_path
         finally:
-            # 文件清理逻辑
             if self.delete_audio_file and file_path and os.path.exists(file_path):
                 try:
                     os.remove(file_path)
-                    logger.bind(tag=TAG).debug(f"已删除临时音频文件: {file_path}")
+                    logger.bind(tag=TAG).debug(f"Deleted temp file: {file_path}")
                 except Exception as e:
-                    logger.bind(tag=TAG).error(f"文件删除失败: {file_path} | 错误: {e}")
+                    logger.bind(tag=TAG).error(f"File deletion failed: {file_path} | Error: {e}")

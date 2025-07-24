@@ -14,9 +14,9 @@
         <div class="login-box" @keyup.enter="login">
           <div style="display: flex;align-items: center;gap: 20px;margin-bottom: 39px;padding: 0 30px;">
             <img loading="lazy" alt="" src="@/assets/login/hi.png" style="width: 34px;height: 34px;" />
-            <div class="login-text">登录</div>
+            <div class="login-text">{{$t('login.title')}}</div>
             <div class="login-welcome">
-              WELCOME TO LOGIN
+              {{$t('login.welcome')}}
             </div>
           </div>
           <div style="padding: 0 30px;">
@@ -24,7 +24,7 @@
             <template v-if="!isMobileLogin">
               <div class="input-box">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/username.png" />
-                <el-input v-model="form.username" placeholder="请输入用户名" />
+                <el-input v-model="form.username" :placeholder="$t('login.username')" />
               </div>
             </template>
 
@@ -36,48 +36,48 @@
                     <el-option v-for="item in mobileAreaList" :key="item.key" :label="`${item.name} (${item.key})`"
                       :value="item.key" />
                   </el-select>
-                  <el-input v-model="form.mobile" placeholder="请输入手机号码" />
+                  <el-input v-model="form.mobile" :placeholder="$t('login.mobilePlaceholder')" />
                 </div>
               </div>
             </template>
 
             <div class="input-box">
               <img loading="lazy" alt="" class="input-icon" src="@/assets/login/password.png" />
-              <el-input v-model="form.password" placeholder="请输入密码" type="password" show-password />
+              <el-input v-model="form.password" :placeholder="$t('login.passwordPlaceholder')" type="password" />
             </div>
             <div style="display: flex; align-items: center; margin-top: 20px; width: 100%; gap: 10px;">
               <div class="input-box" style="width: calc(100% - 130px); margin-top: 0;">
                 <img loading="lazy" alt="" class="input-icon" src="@/assets/login/shield.png" />
-                <el-input v-model="form.captcha" placeholder="请输入验证码" style="flex: 1;" />
+                <el-input v-model="form.captcha" :placeholder="$t('login.captchaPlaceholder')" style="flex: 1;" />
               </div>
-              <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" alt="验证码"
+              <img loading="lazy" v-if="captchaUrl" :src="captchaUrl" :alt="$t('login.captchaAlt')"
                 style="width: 150px; height: 40px; cursor: pointer;" @click="fetchCaptcha" />
             </div>
             <div
               style="font-weight: 400;font-size: 14px;text-align: left;color: #5778ff;display: flex;justify-content: space-between;margin-top: 20px;">
-              <div v-if="allowUserRegister" style="cursor: pointer;" @click="goToRegister">新用户注册</div>
-              <div style="cursor: pointer;" @click="goToForgetPassword" v-if="enableMobileRegister">忘记密码?</div>
+              <div v-if="allowUserRegister" style="cursor: pointer;" @click="goToRegister">{{$t('login.toRegister')}}</div>
+              <div style="cursor: pointer;" @click="goToForgetPassword" v-if="enableMobileRegister">{{$t('login.forgetPassword')}}</div>
             </div>
           </div>
-          <div class="login-btn" @click="login">登录</div>
+          <div class="login-btn" @click="login">{{$t('login.loginBtn')}}</div>
 
           <!-- 登录方式切换按钮 -->
           <div class="login-type-container" v-if="enableMobileRegister">
-            <el-tooltip content="手机号码登录" placement="bottom">
+            <el-tooltip :content="$t('login.mobileLogin')" placement="bottom">
               <el-button :type="isMobileLogin ? 'primary' : 'default'" icon="el-icon-mobile" circle
                 @click="switchLoginType('mobile')"></el-button>
             </el-tooltip>
-            <el-tooltip content="用户名登录" placement="bottom">
+            <el-tooltip :content="$t('login.usernameLogin')" placement="bottom">
               <el-button :type="!isMobileLogin ? 'primary' : 'default'" icon="el-icon-user" circle
                 @click="switchLoginType('username')"></el-button>
             </el-tooltip>
           </div>
 
           <div style="font-size: 14px;color: #979db1;">
-            登录即同意
-            <div style="display: inline-block;color: #5778FF;cursor: pointer;">《用户协议》</div>
-            和
-            <div style="display: inline-block;color: #5778FF;cursor: pointer;">《隐私政策》</div>
+            {{$t('login.agreePrefix')}}
+            <div style="display: inline-block;color: #5778FF;cursor: pointer;">{{$t('login.userAgreement')}}</div>
+            {{$t('login.and')}}
+            <div style="display: inline-block;color: #5778FF;cursor: pointer;">{{$t('login.privacyPolicy')}}</div>
           </div>
         </div>
       </el-main>

@@ -45,7 +45,7 @@ export const register = () => {
                     `;
                     updateNotification.innerHTML = `
                       <div style="display: flex; align-items: center;">
-                        <span style="margin-right: 10px;">发现新版本，点击刷新应用</span>
+                        <span style="margin-right: 10px;">New version found, click to refresh the app</span>
                         <button style="background: white; color: #409EFF; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">刷新</button>
                       </div>
                     `;
@@ -110,4 +110,4 @@ export const unregister = () => {
         console.error(error.message);
       });
   }
-}; 
+};

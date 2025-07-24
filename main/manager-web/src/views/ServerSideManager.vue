@@ -3,7 +3,7 @@
     <HeaderBar />
 
     <div class="operation-bar">
-      <h2 class="page-title">服务端管理</h2>
+      <h2 class="page-title">{{$t('serverSideManager.title')}}</h2>
     </div>
 
     <div class="main-wrapper">
@@ -11,19 +11,19 @@
         <div class="content-area">
           <el-card class="params-card" shadow="never">
             <el-table ref="paramsTable" :data="paramsList" class="transparent-table" v-loading="loading"
-              element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+              :element-loading-text="$t('serverSideManager.loading')" element-loading-spinner="el-icon-loading"
               element-loading-background="rgba(255, 255, 255, 0.7)" :header-cell-class-name="headerCellClassName">
-              <el-table-column label="选择" align="center" width="120">
+              <el-table-column :label="$t('serverSideManager.select')" align="center" width="120">
                 <template slot-scope="scope">
                   <el-checkbox v-model="scope.row.selected"></el-checkbox>
                 </template>
               </el-table-column>
-              <el-table-column label="ws地址" prop="address" align="center"></el-table-column>
-              <el-table-column label="操作" prop="operator" align="center" show-overflow-tooltip>
+              <el-table-column :label="$t('serverSideManager.wsAddress')" prop="address" align="center"></el-table-column>
+              <el-table-column :label="$t('serverSideManager.operation')" prop="operator" align="center" show-overflow-tooltip>
                 <template slot-scope="scope">
-                  <el-button size="medium" type="text" @click="emitAction(scope.row, actionMap.restart)">重启</el-button>
+                  <el-button size="medium" type="text" @click="emitAction(scope.row, actionMap.restart)">{{$t('serverSideManager.restart')}}</el-button>
                   <el-button size="medium" type="text"
-                    @click="emitAction(scope.row, actionMap.update_config)">更新配置</el-button>
+                    @click="emitAction(scope.row, actionMap.update_config)">{{$t('serverSideManager.updateConfig')}}</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -53,15 +53,15 @@ export default {
       actionMap: {
         restart: {
           value: 'restart',
-          title: "重启服务端",
-          message: "确定要重启服务端吗？",
-          confirmText: "重启",
+          title: "Restart Server",
+          message: "Are you sure you want to restart the server?",
+          confirmText: "Restart",
         },
         update_config: {
           value: 'update_config',
-          title: "更新配置",
-          message: "确定要更新配置吗？",
-          confirmText: "更新",
+          title: "Update Config",
+          message: "Are you sure you want to update the config?",
+          confirmText: "Update",
         }
       },
       currentPage: 1,

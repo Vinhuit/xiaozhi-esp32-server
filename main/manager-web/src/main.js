@@ -7,6 +7,7 @@ import router from './router';
 import store from './store';
 import './styles/global.scss';
 import { register as registerServiceWorker } from './registerServiceWorker';
+import i18n from './i18n';
 
 Vue.use(ElementUI);
 
@@ -17,6 +18,7 @@ registerServiceWorker();
 
 // 创建Vue实例
 new Vue({
+  i18n,
   router,
   store,
   render: function (h) { return h(App) }

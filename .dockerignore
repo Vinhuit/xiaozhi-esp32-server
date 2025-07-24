@@ -5,3 +5,4 @@ __pycache__
 Dockerfile
 tmp/
 data/
+main/xiaozhi-server/mysql/data/mysql.sock

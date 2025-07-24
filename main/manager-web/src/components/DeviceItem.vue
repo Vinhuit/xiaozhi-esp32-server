@@ -14,31 +14,31 @@
       </div>
     </div>
     <div class="device-name">
-      语言模型：{{ device.llmModelName }}
+      {{$t('deviceItem.llmModel')}}: {{ device.llmModelName }}
     </div>
     <div class="device-name">
-      音色模型：{{ device.ttsModelName }} ({{ device.ttsVoiceName }})
+      {{$t('deviceItem.ttsModel')}}: {{ device.ttsModelName }} ({{ device.ttsVoiceName }})
     </div>
     <div style="display: flex;gap: 10px;align-items: center;">
       <div class="settings-btn" @click="handleConfigure">
-        配置角色
+        {{$t('deviceItem.configureRole')}}
       </div>
        <div class="settings-btn" @click="handleVoicePrint">
-        声纹识别
+        Voice Print
       </div>
       <div class="settings-btn" @click="handleDeviceManage">
-        设备管理({{ device.deviceCount }})
+        {{$t('deviceItem.deviceManagement')}}({{ device.deviceCount }})
       </div>
       <div class="settings-btn" @click="handleChatHistory"
         :class="{ 'disabled-btn': device.memModelId === 'Memory_nomem' }">
-        <el-tooltip v-if="device.memModelId === 'Memory_nomem'" content="请先在“配置角色”界面开启记忆" placement="top">
-          <span>聊天记录</span>
+        <el-tooltip v-if="device.memModelId === 'Memory_nomem'" :content="$t('deviceItem.enableMemoryTip')" placement="top">
+          <span>{{$t('deviceItem.chatHistory')}}</span>
         </el-tooltip>
-        <span v-else>聊天记录</span>
+        <span v-else>{{$t('deviceItem.chatHistory')}}</span>
       </div>
     </div>
     <div class="version-info">
-      <div>最近对话：{{ formattedLastConnectedTime }}</div>
+      <div>{{$t('deviceItem.lastConversation')}}: {{ formattedLastConnectedTime }}</div>
     </div>
   </div>
 </template>

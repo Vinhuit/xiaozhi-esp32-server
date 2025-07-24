@@ -562,6 +562,19 @@ class ConnectionHandler:
         if modules.get("memory", None) is not None:
             self.memory = modules["memory"]
 
+    def process_result(self, result):
+        # Decode unicode and newlines
+        if isinstance(result, str):
+            try:
+                result = result.encode('utf-8').decode('unicode_escape')
+            except Exception:
+                pass
+        # Try to pretty print JSON
+        try:
+            parsed = json.loads(result)
+            return json.dumps(parsed, indent=2, ensure_ascii=False)
+        except Exception:
+            return str(result)
     def _initialize_memory(self):
         if self.memory is None:
             return
@@ -659,6 +672,7 @@ class ConnectionHandler:
         self.dialogue.update_system_message(self.prompt)
 
     def chat(self, query, tool_call=False, depth=0):
+       
         self.logger.bind(tag=TAG).info(f"大模型收到用户消息: {query}")
         self.llm_finish_task = False
 
@@ -838,10 +852,13 @@ class ConnectionHandler:
     def _handle_function_result(self, result, function_call_data, depth):
         if result.action == Action.RESPONSE:  # 直接回复前端
             text = result.response
+            
             self.tts.tts_one_sentence(self, ContentType.TEXT, content_detail=text)
             self.dialogue.put(Message(role="assistant", content=text))
         elif result.action == Action.REQLLM:  # 调用函数后再请求llm生成回复
             text = result.result
+            
+            # self.logger.bind(tag=TAG).info(f"PROCESSED: {text}")
             if text is not None and len(text) > 0:
                 function_id = function_call_data["id"]
                 function_name = function_call_data["name"]
@@ -872,6 +889,7 @@ class ConnectionHandler:
                         content=text,
                     )
                 )
+                # text=self.process_result(text)
                 self.chat(text, tool_call=True, depth=depth + 1)
         elif result.action == Action.NOTFOUND or result.action == Action.ERROR:
             text = result.response if result.response else result.result

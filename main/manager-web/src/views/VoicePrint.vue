@@ -13,21 +13,21 @@
                         <el-table ref="paramsTable" :data="voicePrintList" class="transparent-table" v-loading="loading"
                             element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
                             element-loading-background="rgba(255, 255, 255, 0.7)">
-                            <el-table-column label="姓名" prop="sourceName" align="center"></el-table-column>
-                            <el-table-column label="描述" prop="introduce" align="center"></el-table-column>
-                            <el-table-column label="创建时间" prop="createDate" align="center"></el-table-column>
-                            <el-table-column label="操作" align="center">
+                            <el-table-column label="Name" prop="sourceName" align="center"></el-table-column>
+                            <el-table-column label="Description" prop="introduce" align="center"></el-table-column>
+                            <el-table-column label="Creation Time" prop="createDate" align="center"></el-table-column>
+                            <el-table-column label="Actions" align="center">
                                 <template slot-scope="scope">
-                                    <el-button size="mini" type="text" @click="editVoicePrint(scope.row)">编辑</el-button>
+                                    <el-button size="mini" type="text" @click="editVoicePrint(scope.row)">Edit</el-button>
                                     <el-button size="mini" type="text"
-                                        @click="deleteVoicePrint(scope.row.id)">删除</el-button>
+                                        @click="deleteVoicePrint(scope.row.id)">Delete</el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
 
                         <div class="table_bottom">
                             <div class="ctrl_btn">
-                                <el-button size="mini" type="success" @click="showAddDialog">新增</el-button>
+                                <el-button size="mini" type="success" @click="showAddDialog">AddNew</el-button>
                             </div>
                         </div>
                     </el-card>
@@ -56,7 +56,7 @@ export default {
             voicePrintList: [],
             loading: false,
             dialogVisible: false,
-            dialogTitle: "添加说话人",
+            dialogTitle: "Add Speaker",
             isAllSelected: false,
             paramForm: {
                 id: null,
@@ -87,7 +87,7 @@ export default {
                         }));
                     } else {
                         this.$message.error({
-                            message: data.msg || '获取声纹列表失败',
+                            message: data.msg || 'Failed to fetch voice print list',
                             showClose: true
                         });
                     }
@@ -95,7 +95,7 @@ export default {
             );
         },
         showAddDialog() {
-            this.dialogTitle = "添加说话人";
+            this.dialogTitle = "Add Speaker";
             this.paramForm = {
                 id: null,
                 audioId: '',
@@ -105,7 +105,7 @@ export default {
             this.dialogVisible = true;
         },
         editVoicePrint(row) {
-            this.dialogTitle = "编辑说话人";
+            this.dialogTitle = "Edit Speaker";
             this.paramForm = { ...row };
             this.dialogVisible = true;
         },
@@ -116,7 +116,7 @@ export default {
                 Api.agent.updateAgentVoicePrint(form, ({ data }) => {
                     if (data.code === 0) {
                         this.$message.success({
-                            message: "修改成功",
+                            message: "Edit Speaker",
                             showClose: true
                         });
                         this.dialogVisible = false;
@@ -134,7 +134,7 @@ export default {
                 }, ({ data }) => {
                     if (data.code === 0) {
                         this.$message.success({
-                            message: "新增成功",
+                            message: "Add successful",
                             showClose: true
                         });
                         this.dialogVisible = false;
@@ -146,22 +146,22 @@ export default {
         },
         // 删除按钮
         deleteVoicePrint(id) {
-            this.$confirm(`确定要删除选中的此声纹吗？`, '警告', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
+            this.$confirm(`Are you sure you want to delete the selected voice print？`, 'Warning', {
+                confirmButtonText: 'Confirm',
+                cancelButtonText: 'Cancel',
                 type: 'warning',
                 distinguishCancelAndClose: true
             }).then(() => {
                 Api.agent.deleteAgentVoicePrint(id, ({ data }) => {
                     if (data.code === 0) {
                         this.$message.success({
-                            message: `成功删除此声纹`,
+                            message: `Voice print deleted successfully`,
                             showClose: true
                         });
                         this.fetchVoicePrints();
                     } else {
                         this.$message.error({
-                            message: data.msg || '删除失败，请重试',
+                            message: data.msg || 'Delete failed, please try again',
                             showClose: true
                         });
                     }
@@ -170,13 +170,13 @@ export default {
                 if (action === 'cancel') {
                     this.$message({
                         type: 'info',
-                        message: '已取消删除操作',
+                        message: 'Delete operation canceled',
                         duration: 1000
                     });
                 } else {
                     this.$message({
                         type: 'info',
-                        message: '操作已关闭',
+                        message: 'Operation closed',
                         duration: 1000
                     });
                 }
