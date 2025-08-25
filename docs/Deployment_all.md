@@ -7,11 +7,13 @@ docker镜像已支持x86架构、arm64架构的CPU，支持在国产操作系统
 
 如果您的电脑还没安装docker，可以按照这里的教程安装：[docker安装](https://www.runoob.com/docker/ubuntu-docker-install.html)
 
-docker 安装全模块有两种方式，你可以[1.1使用懒人脚本](#1.1 懒人脚本)（作者[@VanillaNahida](https://github.com/VanillaNahida)）自动帮你下载所需的文件和配置文件，你可以使用[1.2手动部署](#1.2 手动部署)从零搭建。
+docker 安装全模块有两种方式，你可以[使用懒人脚本](./Deployment_all.md#11-懒人脚本)（作者[@VanillaNahida](https://github.com/VanillaNahida)）  
+脚本会自动帮你下载所需的文件和配置文件，你也可以使用[手动部署](./Deployment_all.md#12-手动部署)从零搭建。
+
+
 
 ### 1.1 懒人脚本
-
-你可以使用以下命令一键安装全模块版小智服务端：  
+部署简便，可以参考[视频教程](https://www.bilibili.com/video/BV17bbvzHExd/) ，文字版教程如下：
 > [!NOTE]  
 > 暂且只支持Ubuntu服务器一键部署，其他系统未尝试，可能会有一些奇怪的bug
 
@@ -456,19 +458,29 @@ ws://你电脑局域网的ip:8000/xiaozhi/v1/
 2、 [基于虾哥编译好的固件配置自定义服务器](firmware-setting.md)了。
 
 # 常见问题
-
 以下是一些常见问题，供参考：
 
-[1、为什么我说的话，小智识别出来很多韩文、日文、英文](./FAQ.md)
-
-[2、为什么会出现“TTS 任务出错 文件不存在”？](./FAQ.md)
-
-[3、TTS 经常失败，经常超时](./FAQ.md)
-
-[4、使用Wifi能连接自建服务器，但是4G模式却接不上](./FAQ.md)
-
-[5、如何提高小智对话响应速度？](./FAQ.md)
-
-[6、我说话很慢，停顿时小智老是抢话](./FAQ.md)
-
-[7、我想通过小智控制电灯、空调、远程开关机等操作](./FAQ.md)
+1、[为什么我说的话，小智识别出来很多韩文、日文、英文](./FAQ.md)<br/>
+2、[为什么会出现“TTS 任务出错 文件不存在”？](./FAQ.md)<br/>
+3、[TTS 经常失败，经常超时](./FAQ.md)<br/>
+4、[使用Wifi能连接自建服务器，但是4G模式却接不上](./FAQ.md)<br/>
+5、[如何提高小智对话响应速度？](./FAQ.md)<br/>
+6、[我说话很慢，停顿时小智老是抢话](./FAQ.md)<br/>
+## 部署相关教程
+1、[如何自动拉取本项目最新代码自动编译和启动](./dev-ops-integration.md)<br/>
+2、[如何与Nginx集成](https://github.com/xinnan-tech/xiaozhi-esp32-server/issues/791)<br/>
+## 拓展相关教程
+1、[如何开启手机号码注册智控台](./ali-sms-integration.md)<br/>
+2、[如何集成HomeAssistant实现智能家居控制](./homeassistant-integration.md)<br/>
+3、[如何开启视觉模型实现拍照识物](./mcp-vision-integration.md)<br/>
+4、[如何部署MCP接入点](./mcp-endpoint-enable.md)<br/>
+5、[如何接入MCP接入点](./mcp-endpoint-integration.md)<br/>
+6、[如何开启声纹识别](./voiceprint-integration.md)<br/>
+10、[新闻插件源配置指南](./newsnow_plugin_config.md)<br/>
+## 语音克隆、本地语音部署相关教程
+1、[如何部署集成index-tts本地语音](./index-stream-integration.md)<br/>
+2、[如何部署集成fish-speech本地语音](./fish-speech-integration.md)<br/>
+3、[如何部署集成PaddleSpeech本地语音](./paddlespeech-deploy.md)<br/>
+## 性能测试教程
+1、[各组件速度测试指南](./performance_tester.md)<br/>
+2、[定期公开测试结果](https://github.com/xinnan-tech/xiaozhi-performance-research)<br/>

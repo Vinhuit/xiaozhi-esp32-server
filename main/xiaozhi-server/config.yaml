@@ -59,12 +59,6 @@ log:
 delete_audio: true
 # 没有语音输入多久后断开连接(秒)，默认2分钟，即120秒
 close_connection_no_voice_time: 120
-# TTS请求超时时间(秒)
-tts_timeout: 10
-# 开启唤醒词加速
-enable_wakeup_words_response_cache: true
-# 开场是否回复唤醒词
-enable_greeting: true
 # 说完话是否开启提示音
 enable_stop_tts_notify: false
 # 说完话是否开启提示音，音效地址
@@ -586,6 +580,9 @@ TTS:
     access_token: 你的火山引擎语音合成服务access_token
     resource_id: volc.service_type.10029
     speaker: zh_female_wanwanxiaohe_moon_bigtts
+    speech_rate: 0
+    loudness_rate: 0
+    pitch: 0
   CosyVoiceSiliconflow:
     type: siliconflow
     # 硅基流动TTS
@@ -899,4 +896,12 @@ TTS:
     speed: 1.0  # 语速，1.0 表示正常语速，>1 表示加快，<1 表示减慢
     volume: 1.0  # 音量，1.0 表示正常音量，>1 表示增大，<1 表示减小
     save_path: ./streaming_tts.wav  # 服务器生成的语音文件保存路径
-
+  IndexStreamTTS:
+    # 基于Index-TTS-vLLM项目的TTS接口服务
+    # 参照教程：https://github.com/Ksuriuri/index-tts-vllm/blob/master/README.md
+    type: index_stream
+    api_url: http://127.0.0.1:11996/tts
+    audio_format: "pcm"
+    # 默认音色，如需其他音色可到项目assets文件夹下注册
+    voice: "jay_klee"
+    output_dir: tmp/
