@@ -18,7 +18,7 @@ TAG = __name__
 MUSIC_CACHE = {}
 
 # --- CONFIGURE YOUR YOUTUBE API KEY HERE ---
-YOUTUBE_API_KEY = "AIzaSyC1VbL19O95-G64yxuIHIjw9XuwFwsuSpk"   # <-- Replace with your YouTube Data API v3 key!
+YOUTUBE_API_KEY = ""   # <-- Replace with your YouTube Data API v3 key!
 YOUTUBE_CACHE_DIR = "./music/youtube_cache"
 
 def ensure_youtube_cache_dir():
