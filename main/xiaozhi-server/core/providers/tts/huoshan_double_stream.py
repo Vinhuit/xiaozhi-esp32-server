@@ -449,7 +449,6 @@ class TTSProvider(TTSProviderBase):
                         res.optional.event == EVENT_TTSResponse
                         and res.header.message_type == AUDIO_ONLY_RESPONSE
                     ):
-                        logger.bind(tag=TAG).debug(f"推送数据到队列里面～～")
                         self.wav_to_opus_data_audio_raw_stream(res.payload, callback=self.handle_opus)
                     elif res.optional.event == EVENT_TTSSentenceEnd:
                         logger.bind(tag=TAG).info(f"句子语音生成成功：{self.tts_text}")
@@ -616,15 +615,117 @@ class TTSProvider(TTSProviderBase):
                             "speech_rate": self.speech_rate,
                             "loudness_rate": self.loudness_rate
                         },
+                        "additions": json.dumps({
+                            "post_process": {
+                                "pitch": self.pitch
+                            }
+                        })
                     },
-                    "additions": {
-                        "post_process": {
-                            "pitch": self.pitch
-                        }
-                    }
+
                 }
             )
         )
 
     def wav_to_opus_data_audio_raw_stream(self, raw_data_var, is_end=False, callback: Callable[[Any], Any]=None):
         return self.opus_encoder.encode_pcm_to_opus_stream(raw_data_var, is_end, callback=callback)
+
+    def to_tts(self, text: str) -> list:
+        """非流式生成音频数据，用于生成音频及测试场景
+        Args:
+            text: 要转换的文本
+        Returns:
+            list: 音频数据列表
+        """
+        try:
+            # 创建事件循环
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            # 生成会话ID
+            session_id = uuid.uuid4().__str__().replace("-", "")
+
+            # 存储音频数据
+            audio_data = []
+
+            async def _generate_audio():
+                # 创建新的WebSocket连接
+                ws_header = {
+                    "X-Api-App-Key": self.appId,
+                    "X-Api-Access-Key": self.access_token,
+                    "X-Api-Resource-Id": self.resource_id,
+                    "X-Api-Connect-Id": uuid.uuid4(),
+                }
+                ws = await websockets.connect(
+                    self.ws_url, additional_headers=ws_header, max_size=1000000000
+                )
+
+                try:
+                    # 启动会话
+                    header = Header(
+                        message_type=FULL_CLIENT_REQUEST,
+                        message_type_specific_flags=MsgTypeFlagWithEvent,
+                        serial_method=JSON,
+                    ).as_bytes()
+                    optional = Optional(
+                        event=EVENT_StartSession, sessionId=session_id
+                    ).as_bytes()
+                    payload = self.get_payload_bytes(
+                        event=EVENT_StartSession, speaker=self.voice
+                    )
+                    await self.send_event(ws, header, optional, payload)
+
+                    # 发送文本
+                    header = Header(
+                        message_type=FULL_CLIENT_REQUEST,
+                        message_type_specific_flags=MsgTypeFlagWithEvent,
+                        serial_method=JSON,
+                    ).as_bytes()
+                    optional = Optional(
+                        event=EVENT_TaskRequest, sessionId=session_id
+                    ).as_bytes()
+                    payload = self.get_payload_bytes(
+                        event=EVENT_TaskRequest, text=text, speaker=self.voice
+                    )
+                    await self.send_event(ws, header, optional, payload)
+
+                    # 发送结束会话请求
+                    header = Header(
+                        message_type=FULL_CLIENT_REQUEST,
+                        message_type_specific_flags=MsgTypeFlagWithEvent,
+                        serial_method=JSON,
+                    ).as_bytes()
+                    optional = Optional(
+                        event=EVENT_FinishSession, sessionId=session_id
+                    ).as_bytes()
+                    payload = str.encode("{}")
+                    await self.send_event(ws, header, optional, payload)
+
+                    # 接收音频数据
+                    while True:
+                        msg = await ws.recv()
+                        res = self.parser_response(msg)
+
+                        if (
+                            res.optional.event == EVENT_TTSResponse
+                            and res.header.message_type == AUDIO_ONLY_RESPONSE
+                        ):
+                            self.wav_to_opus_data_audio_raw_stream(res.payload, callback=lambda opus_frame: audio_data.append(opus_frame))
+                        elif res.optional.event == EVENT_SessionFinished:
+                            break
+
+                finally:
+                    # 清理资源
+                    try:
+                        await ws.close()
+                    except:
+                        pass
+
+            # 运行异步任务
+            loop.run_until_complete(_generate_audio())
+            loop.close()
+
+            return audio_data
+
+        except Exception as e:
+            logger.bind(tag=TAG).error(f"生成音频数据失败: {str(e)}")
+            return []

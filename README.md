@@ -6,7 +6,7 @@
 本项目基于人机共生智能理论和技术研发智能终端软硬件体系<br/>为开源智能硬件项目
 <a href="https://github.com/78/xiaozhi-esp32">xiaozhi-esp32</a>提供后端服务<br/>
 根据<a href="https://ccnphfhqs21z.feishu.cn/wiki/M0XiwldO9iJwHikpXD5cEx71nKh">小智通信协议</a>使用Python、Java、Vue实现<br/>
-支持MCP接入点和声纹识别
+支持MQTT+UDP协议、Websocket协议、MCP接入点、声纹识别
 </p>
 
 <p align="center">
@@ -57,26 +57,42 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
 <table>
   <tr>
     <td>
+        <a href="https://www.bilibili.com/video/BV1FMFyejExX" target="_blank">
+         <picture>
+           <img alt="响应速度感受" src="docs/images/demo9.png" />
+         </picture>
+        </a>
+    </td>
+    <td>
+        <a href="https://www.bilibili.com/video/BV1vchQzaEse" target="_blank">
+         <picture>
+           <img alt="速度优化秘诀" src="docs/images/demo6.png" />
+         </picture>
+        </a>
+    </td>
+    <td>
         <a href="https://www.bilibili.com/video/BV1C1tCzUEZh" target="_blank">
          <picture>
-           <img alt="小智医疗救护车场景" src="docs/images/demo1.png" />
+           <img alt="复杂医疗场景" src="docs/images/demo1.png" />
          </picture>
         </a>
     </td>
     <td>
-        <a href="https://www.bilibili.com/video/BV1CDKWemEU6" target="_blank">
+        <a href="https://www.bilibili.com/video/BV1zUW5zJEkq" target="_blank">
          <picture>
-           <img alt="自定义音色" src="docs/images/demo2.png" />
+           <img alt="MQTT指令下发" src="docs/images/demo4.png" />
          </picture>
         </a>
     </td>
     <td>
-        <a href="https://www.bilibili.com/video/BV12yA2egEaC" target="_blank">
+        <a href="https://www.bilibili.com/video/BV1Exu3zqEDe" target="_blank">
          <picture>
-           <img alt="使用粤语交流" src="docs/images/demo3.png" />
+           <img alt="声纹识别" src="docs/images/demo14.png" />
          </picture>
         </a>
     </td>
+  </tr>
+  <tr>
     <td>
         <a href="https://www.bilibili.com/video/BV1pNXWYGEx1" target="_blank">
          <picture>
@@ -85,18 +101,16 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
         </a>
     </td>
     <td>
-        <a href="https://www.bilibili.com/video/BV1kgA2eYEQ9" target="_blank">
+        <a href="https://www.bilibili.com/video/BV1ZQKUzYExM" target="_blank">
          <picture>
-           <img alt="成本最低配置" src="docs/images/demo4.png" />
+           <img alt="MCP接入点" src="docs/images/demo13.png" />
          </picture>
         </a>
     </td>
-  </tr>
-  <tr>
     <td>
-        <a href="https://www.bilibili.com/video/BV1Vy96YCE3R" target="_blank">
+      <a href="https://www.bilibili.com/video/BV1TJ7WzzEo6" target="_blank">
          <picture>
-           <img alt="自定义音色" src="docs/images/demo6.png" />
+           <img alt="多指令任务" src="docs/images/demo11.png" />
          </picture>
         </a>
     </td>
@@ -111,20 +125,6 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
         <a href="https://www.bilibili.com/video/BV1Z8XuYZEAS" target="_blank">
          <picture>
            <img alt="天气插件" src="docs/images/demo8.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV178XuYfEpi" target="_blank">
-         <picture>
-           <img alt="IOT指令控制设备" src="docs/images/demo9.png" />
-         </picture>
-        </a>
-    </td>
-    <td>
-        <a href="https://www.bilibili.com/video/BV17LXWYvENb" target="_blank">
-         <picture>
-           <img alt="播报新闻" src="docs/images/demo0.png" />
          </picture>
         </a>
     </td>
@@ -145,23 +145,23 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
         </a>
     </td>
     <td>
-      <a href="https://www.bilibili.com/video/BV1TJ7WzzEo6" target="_blank">
+        <a href="https://www.bilibili.com/video/BV1CDKWemEU6" target="_blank">
          <picture>
-           <img alt="多指令任务" src="docs/images/demo11.png" />
+           <img alt="自定义音色" src="docs/images/demo2.png" />
          </picture>
         </a>
     </td>
     <td>
-        <a href="https://www.bilibili.com/video/BV1ZQKUzYExM" target="_blank">
+        <a href="https://www.bilibili.com/video/BV12yA2egEaC" target="_blank">
          <picture>
-           <img alt="MCP接入点" src="docs/images/demo13.png" />
+           <img alt="使用粤语交流" src="docs/images/demo3.png" />
          </picture>
         </a>
     </td>
     <td>
-        <a href="https://www.bilibili.com/video/BV1Exu3zqEDe" target="_blank">
+        <a href="https://www.bilibili.com/video/BV17LXWYvENb" target="_blank">
          <picture>
-           <img alt="声纹识别" src="docs/images/demo14.png" />
+           <img alt="播报新闻" src="docs/images/demo0.png" />
          </picture>
         </a>
     </td>
@@ -241,7 +241,7 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 ![请参考-全模块安装架构图](docs/images/deploy2.png)
 | 功能模块 | 描述 |
 |:---:|:---|
-| 核心架构 | 基于WebSocket和HTTP服务器，提供完整的控制台管理和认证系统 |
+| 核心架构 | 基于[MQTT+UDP网关](https://github.com/xinnan-tech/xiaozhi-esp32-server/blob/main/docs/mqtt-gateway-integration.md)、WebSocket、HTTP服务器，提供完整的控制台管理和认证系统 |
 | 语音交互 | 支持流式ASR(语音识别)、流式TTS(语音合成)、VAD(语音活动检测)，支持多语言识别和语音处理 |
 | 声纹识别 | 支持多用户声纹注册、管理和识别，与ASR并行处理，实时识别说话人身份并传递给LLM进行个性化回应 |
 | 智能对话 | 支持多种LLM(大语言模型)，实现智能对话 |
@@ -249,7 +249,8 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 | 意图识别 | 支持LLM意图识别、Function Call函数调用，提供插件化意图处理机制 |
 | 记忆系统 | 支持本地短期记忆、mem0ai接口记忆，具备记忆总结功能 |
 | 工具调用 | 支持客户端IOT协议、客户MCP协议、服务端MCP协议、MCP接入点协议、自定义工具函数 |
-| 管理后台 | 提供Web管理界面，支持用户管理、系统配置和设备管理 |
+| 指令下发 | 依托MQTT协议，支持从智控台将MCP指令下发到ESP32设备 |
+| 管理后台 | 提供Web管理界面，支持用户管理、系统配置和设备管理；界面支持中文简体、中文繁体、英文显示 |
 | 测试工具 | 提供性能测试工具、视觉模型测试工具和音频交互测试工具 |
 | 部署支持 | 支持Docker部署和本地部署，提供完整的配置文件管理 |
 | 插件系统 | 支持功能插件扩展、自定义插件开发和插件热加载 |
@@ -263,13 +264,7 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 ---
 
 ## 产品生态 👬
-小智是一个生态，当你使用这个产品时，也可以看看其他在这个生态圈的优秀项目
-
-| 项目名称  | 项目地址 | 项目描述 |
-|:---------------------|:--------|:--------|
-| 小智安卓客户端  | [xiaozhi-android-client](https://github.com/TOM88812/xiaozhi-android-client) | 一个基于xiaozhi-server的Android、IOS语音对话应用,支持实时语音交互和文字对话。<br/>现在是flutter版本，打通IOS、Android端。 |
-| 小智电脑客户端  | [py-xiaozhi](https://github.com/Huang-junsen/py-xiaozhi) | 该项目提供了一个基于 Python 实现的小白 AI 客户端，使得在不具备实体硬件条件的情况下，<br/>依然能够体过代码体验小智 AI 的功能。 |
-| 小智Java服务端  | [xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java) | 小智开源后端服务 Java 版本是一个基于 Java 的开源项目。<br/>它包括前后端的服务，旨在为用户提供一个完整的后端服务解决方案。 |
+小智是一个生态，当你使用这个产品时，也可以看看其他在这个生态圈的[优秀项目](https://github.com/78/xiaozhi-esp32?tab=readme-ov-file#%E7%9B%B8%E5%85%B3%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE)
 
 ---
 
@@ -283,6 +278,8 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 | dify 接口调用 | Dify | - |
 | fastgpt 接口调用 | Fastgpt | - |
 | coze 接口调用 | Coze | - |
+| xinference 接口调用 | Xinference | - |
+| homeassistant 接口调用 | HomeAssistant | - |
 
 实际上，任何支持 openai 接口调用的 LLM 均可接入使用。
 
@@ -302,8 +299,8 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 
 | 使用方式 | 支持平台 | 免费平台 |
 |:---:|:---:|:---:|
-| 接口调用 | EdgeTTS、火山引擎豆包TTS、腾讯云、阿里云TTS、CosyVoiceSiliconflow、TTS302AI、CozeCnTTS、GizwitsTTS、ACGNTTS、OpenAITTS、灵犀流式TTS | 灵犀流式TTS、EdgeTTS、CosyVoiceSiliconflow(部分) |
-| 本地服务 | FishSpeech、GPT_SOVITS_V2、GPT_SOVITS_V3、MinimaxTTS | FishSpeech、GPT_SOVITS_V2、GPT_SOVITS_V3、MinimaxTTS |
+| 接口调用 | EdgeTTS、火山引擎豆包TTS、腾讯云、阿里云TTS、阿里云流式TTS、CosyVoiceSiliconflow、TTS302AI、CozeCnTTS、GizwitsTTS、ACGNTTS、OpenAITTS、灵犀流式TTS、MinimaxTTS、火山双流式TTS | 灵犀流式TTS、EdgeTTS、CosyVoiceSiliconflow(部分) |
+| 本地服务 | FishSpeech、GPT_SOVITS_V2、GPT_SOVITS_V3、Index-TTS、PaddleSpeech | Index-TTS、PaddleSpeech、FishSpeech、GPT_SOVITS_V2、GPT_SOVITS_V3 |
 
 ---
 
@@ -320,7 +317,7 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 | 使用方式 | 支持平台 | 免费平台 |
 |:---:|:---:|:---:|
 | 本地使用 | FunASR、SherpaASR | FunASR、SherpaASR |
-| 接口调用 | DoubaoASR、FunASRServer、TencentASR、AliyunASR | FunASRServer |
+| 接口调用 | DoubaoASR、Doubao流式ASR、FunASRServer、TencentASR、AliyunASR、Aliyun流式ASR、百度ASR、OpenAI ASR | FunASRServer |
 
 ---
 
@@ -338,6 +335,7 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 |:------:|:---------------:|:----:|:---------:|:--:|
 | Memory |     mem0ai      | 接口调用 | 1000次/月额度 |    |
 | Memory | mem_local_short | 本地总结 |    免费     |    |
+| Memory |     nomem       | 无记忆模式 |    免费     |    |
 
 ---
 
@@ -347,6 +345,7 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 |:------:|:-------------:|:----:|:-------:|:---------------------:|
 | Intent |  intent_llm   | 接口调用 | 根据LLM收费 |    通过大模型识别意图，通用性强     |
 | Intent | function_call | 接口调用 | 根据LLM收费 | 通过大模型函数调用完成意图，速度快，效果好 |
+| Intent |    nointent   | 无意图模式 |    免费     |    不进行意图识别，直接返回对话结果     |
 
 ---
 

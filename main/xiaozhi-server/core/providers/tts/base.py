@@ -1,29 +1,28 @@
 import os
 import re
-import queue
+import time
 import uuid
+import queue
 import asyncio
 import threading
-from typing import Callable, Any
+import traceback
 from core.utils import p3
-import time
 from datetime import datetime
 from core.utils import textUtils
+from typing import Callable, Any
 from abc import ABC, abstractmethod
 from config.logger import setup_logging
-from core.utils.util import audio_bytes_to_data_stream, audio_to_data_stream
 from core.utils.tts import MarkdownCleaner
 from core.utils.output_counter import add_device_output
 from core.handle.reportHandle import enqueue_tts_report
 from core.handle.sendAudioHandle import sendAudioMessage
+from core.utils.util import audio_bytes_to_data_stream, audio_to_data_stream
 from core.providers.tts.dto.dto import (
     TTSMessageDTO,
     SentenceType,
     ContentType,
     InterfaceType,
 )
-
-import traceback
 
 TAG = __name__
 logger = setup_logging()
@@ -141,6 +140,68 @@ class TTSProviderBase(ABC):
                     )
                     self.tts_audio_queue.put((SentenceType.FIRST, None, text))
                 self._process_audio_file_stream(tmp_file, callback=opus_handler)
+            except Exception as e:
+                logger.bind(tag=TAG).error(f"Failed to generate TTS file: {e}")
+                return None
+    
+    def to_tts(self, text):
+        text = MarkdownCleaner.clean_markdown(text)
+        max_repeat_time = 5
+        if self.delete_audio_file:
+            # 需要删除文件的直接转为音频数据
+            while max_repeat_time > 0:
+                try:
+                    audio_bytes = asyncio.run(self.text_to_speak(text, None))
+                    if audio_bytes:
+                        audio_datas = []
+                        audio_bytes_to_data_stream(
+                            audio_bytes,
+                            file_type=self.audio_file_type,
+                            is_opus=True,
+                            callback=lambda data: audio_datas.append(data)
+                        )
+                        return audio_datas
+                    else:
+                        max_repeat_time -= 1
+                except Exception as e:
+                    logger.bind(tag=TAG).warning(
+                        f"语音生成失败{5 - max_repeat_time + 1}次: {text}，错误: {e}"
+                    )
+                    max_repeat_time -= 1
+            if max_repeat_time > 0:
+                logger.bind(tag=TAG).info(
+                    f"语音生成成功: {text}，重试{5 - max_repeat_time}次"
+                )
+            else:
+                logger.bind(tag=TAG).error(
+                    f"语音生成失败: {text}，请检查网络或服务是否正常"
+                )
+            return None
+        else:
+            tmp_file = self.generate_filename()
+            try:
+                while not os.path.exists(tmp_file) and max_repeat_time > 0:
+                    try:
+                        asyncio.run(self.text_to_speak(text, tmp_file))
+                    except Exception as e:
+                        logger.bind(tag=TAG).warning(
+                            f"语音生成失败{5 - max_repeat_time + 1}次: {text}，错误: {e}"
+                        )
+                        # 未执行成功，删除文件
+                        if os.path.exists(tmp_file):
+                            os.remove(tmp_file)
+                        max_repeat_time -= 1
+
+                if max_repeat_time > 0:
+                    logger.bind(tag=TAG).info(
+                        f"语音生成成功: {text}:{tmp_file}，重试{5 - max_repeat_time}次"
+                    )
+                else:
+                    logger.bind(tag=TAG).error(
+                        f"语音生成失败: {text}，请检查网络或服务是否正常"
+                    )
+
+                return tmp_file
             except Exception as e:
                 logger.bind(tag=TAG).error(f"Failed to generate TTS file: {e}")
                 return None
@@ -270,22 +331,14 @@ class TTSProviderBase(ABC):
 
                 # 收到下一个文本开始或会话结束时进行上报
                 if sentence_type is not SentenceType.MIDDLE:
-                    # 重置音频流控状态（新句子开始或者结束）
-                    if hasattr(self.conn, 'audio_flow_control'):
-                        self.conn.audio_flow_control = {
-                            'last_send_time': 0,
-                            'packet_count': 0,
-                            'start_time': time.perf_counter()
-                        }
-                    
                     # 上报TTS数据
                     if enqueue_text is not None and enqueue_audio is not None:
                         enqueue_tts_report(self.conn, enqueue_text, enqueue_audio)
                     enqueue_audio = []
                     enqueue_text = text
 
-                # 计算音频数据的帧数
-                if isinstance(audio_datas, bytes):
+                # 收集上报音频数据
+                if isinstance(audio_datas, bytes) and enqueue_audio is not None:
                     enqueue_audio.append(audio_datas)
 
                 # 发送音频

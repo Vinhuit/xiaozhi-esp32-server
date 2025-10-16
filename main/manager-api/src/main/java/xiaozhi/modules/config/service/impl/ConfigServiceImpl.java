@@ -299,6 +299,20 @@ public class ConfigServiceImpl implements ConfigService {
             voiceprintConfig.put("url", voiceprintUrl);
             voiceprintConfig.put("speakers", speakers);
 
+            // 获取声纹识别相似度阈值，默认0.4
+            String thresholdStr = sysParamsService.getValue("server.voiceprint_similarity_threshold", true);
+            if (StringUtils.isNotBlank(thresholdStr) && !"null".equals(thresholdStr)) {
+                try {
+                    double threshold = Double.parseDouble(thresholdStr);
+                    voiceprintConfig.put("similarity_threshold", threshold);
+                } catch (NumberFormatException e) {
+                    // 如果解析失败，使用默认值0.4
+                    voiceprintConfig.put("similarity_threshold", 0.4);
+                }
+            } else {
+                voiceprintConfig.put("similarity_threshold", 0.4);
+            }
+
             result.put("voiceprint", voiceprintConfig);
         } catch (Exception e) {
             // 声纹配置获取失败时不影响其他功能
@@ -362,7 +376,8 @@ public class ConfigServiceImpl implements ConfigService {
             if (modelIds[i] == null) {
                 continue;
             }
-            ModelConfigEntity model = modelConfigService.getModelById(modelIds[i], isCache);
+            // 关键：第三个参数传false，确保获取原始密钥
+            ModelConfigEntity model = modelConfigService.getModelByIdFromCache(modelIds[i]);
             if (model == null) {
                 continue;
             }
@@ -410,14 +425,16 @@ public class ConfigServiceImpl implements ConfigService {
                 if ("LLM".equals(modelTypes[i])) {
                     if (StringUtils.isNotBlank(intentLLMModelId)) {
                         if (!typeConfig.containsKey(intentLLMModelId)) {
-                            ModelConfigEntity intentLLM = modelConfigService.getModelById(intentLLMModelId, isCache);
+                            // 修改这里：添加isMaskSensitive=false参数
+                            ModelConfigEntity intentLLM = modelConfigService.getModelByIdFromCache(intentLLMModelId);
                             typeConfig.put(intentLLM.getId(), intentLLM.getConfigJson());
                         }
                     }
                     if (StringUtils.isNotBlank(memLocalShortLLMModelId)) {
                         if (!typeConfig.containsKey(memLocalShortLLMModelId)) {
+                            // 修改这里：添加isMaskSensitive=false参数
                             ModelConfigEntity memLocalShortLLM = modelConfigService
-                                    .getModelById(memLocalShortLLMModelId, isCache);
+                                    .getModelByIdFromCache(memLocalShortLLMModelId);
                             typeConfig.put(memLocalShortLLM.getId(), memLocalShortLLM.getConfigJson());
                         }
                     }
