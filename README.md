@@ -235,7 +235,7 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 ---
 ## 功能清单 ✨
 ### 已实现 ✅
-
+![请参考-全模块安装架构图](docs/images/deploy2.png)
 | 功能模块 | 描述 |
 |:---:|:---|
 | 核心架构 | 基于WebSocket和HTTP服务器，提供完整的控制台管理和认证系统 |
@@ -271,7 +271,6 @@ Websocket接口地址: wss://2662r3426b.vicp.fun/xiaozhi/v1/
 ---
 
 ## 本项目支持的平台/组件列表 📋
-
 ### LLM 语言模型
 
 | 使用方式 | 支持平台 | 免费平台 |

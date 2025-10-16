@@ -64,8 +64,61 @@ class LLMProvider(LLMProviderBase):
             logger.bind(tag=TAG).error(f"HTTP 请求错误: {e}")
         except Exception as e:
             logger.bind(tag=TAG).error(f"生成响应时出错: {e}")
-
+            
     def response_with_functions(self, session_id, dialogue, functions=None):
-        logger.bind(tag=TAG).error(
-            f"homeassistant不支持（function call），建议使用其他意图识别"
-        )
+        try:
+            # Get last user message
+            input_text = None
+            if isinstance(dialogue, list):
+                for message in reversed(dialogue):
+                    if message.get("role") == "user":
+                        input_text = message.get("content", "")
+                        break
+
+            payload = {
+                "text": input_text,
+                "agent_id": self.agent_id,
+                "conversation_id": session_id,
+            }
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+
+            response = requests.post(self.api_url, json=payload, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            # Extract speech content
+            speech = (
+                data.get("response", {})
+                .get("speech", {})
+                .get("plain", {})
+                .get("speech", "")
+            )
+
+            # Try to simulate tool_call
+            tool_calls = None
+            if functions:
+                # Try to find a function that matches the text or intent
+                matched_function = None
+                for fn in functions:
+                    name = fn.get("function", {}).get("name", "")
+                    if name in input_text.lower():
+                        matched_function = fn
+                        break
+
+                if matched_function:
+                    tool_calls = [{
+                        "name": matched_function["function"]["name"],
+                        "arguments": "{}"  # You can implement parameter extraction here
+                    }]
+
+            yield speech, tool_calls
+
+        except RequestException as e:
+            logger.bind(tag=TAG).error(f"HTTP error during function call: {e}")
+            yield f"[Home Assistant API error: {e}]", None
+        except Exception as e:
+            logger.bind(tag=TAG).error(f"Function call handling error: {e}")
+            yield f"[Exception: {e}]", None

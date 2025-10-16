@@ -52,7 +52,6 @@ class TTSProvider(TTSProviderBase):
                     self.processed_chars = 0
                     self.tts_text_buff = []
                     self.segment_count = 0
-                    self.tts_audio_first_sentence = True
                     self.before_stop_play_files.clear()
                 elif ContentType.TEXT == message.content_type:
                     self.tts_text_buff.append(message.content_detail)

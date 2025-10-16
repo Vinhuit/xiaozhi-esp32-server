@@ -233,7 +233,7 @@ This project provides the following testing tools to help you verify the system 
 ---
 ## Feature List ✨
 ### Implemented ✅
-
+![请参考-全模块安装架构图](docs/images/deploy2.png)
 | Feature Module | Description |
 |:---:|:---|
 | Core Architecture | Based on WebSocket and HTTP servers, provides complete console management and authentication system |
@@ -269,7 +269,6 @@ Xiaozhi is an ecosystem. When using this product, you can also check out other e
 ---
 
 ## Supported Platforms/Components List 📋
-
 ### LLM Language Models
 
 | Usage Method | Supported Platforms | Free Platforms |

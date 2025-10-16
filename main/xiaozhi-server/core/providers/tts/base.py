@@ -81,7 +81,7 @@ class TTSProviderBase(ABC):
         text = MarkdownCleaner.clean_markdown(text)
         max_repeat_time = 5
         if self.delete_audio_file:
-            # 需要删除文件的直接转为音频数据
+            # Directly convert to audio data if file deletion is required
             while max_repeat_time > 0:
                 try:
                     audio_bytes = asyncio.run(self.text_to_speak(text, None))
@@ -94,16 +94,16 @@ class TTSProviderBase(ABC):
                         max_repeat_time -= 1
                 except Exception as e:
                     logger.bind(tag=TAG).warning(
-                        f"语音生成失败{5 - max_repeat_time + 1}次: {text}，错误: {e}"
+                        f"Speech generation failed {5 - max_repeat_time + 1} times: {text}, error: {e}"
                     )
                     max_repeat_time -= 1
             if max_repeat_time > 0:
                 logger.bind(tag=TAG).info(
-                    f"语音生成成功: {text}，重试{5 - max_repeat_time}次"
+                    f"Speech generated successfully: {text}, retried {5 - max_repeat_time} times"
                 )
             else:
                 logger.bind(tag=TAG).error(
-                    f"语音生成失败: {text}，请检查网络或服务是否正常"
+                    f"Speech generation failed: {text}, please check network or service status"
                 )
             return None
         else:
@@ -114,20 +114,20 @@ class TTSProviderBase(ABC):
                         asyncio.run(self.text_to_speak(text, tmp_file))
                     except Exception as e:
                         logger.bind(tag=TAG).warning(
-                            f"语音生成失败{5 - max_repeat_time + 1}次: {text}，错误: {e}"
+                            f"Speech generation failed {5 - max_repeat_time + 1} times: {text}, error: {e}"
                         )
-                        # 未执行成功，删除文件
+                        # If not successful, delete the file
                         if os.path.exists(tmp_file):
                             os.remove(tmp_file)
                         max_repeat_time -= 1
 
                 if max_repeat_time > 0:
                     logger.bind(tag=TAG).info(
-                        f"语音生成成功: {text}:{tmp_file}，重试{5 - max_repeat_time}次"
+                        f"Speech generated successfully: {text}:{tmp_file}, retried {5 - max_repeat_time} times"
                     )
                 else:
                     logger.bind(tag=TAG).error(
-                        f"语音生成失败: {text}，请检查网络或服务是否正常"
+                        f"Speech generation failed: {text}, please check network or service status"
                     )
 
                 return tmp_file
@@ -140,11 +140,11 @@ class TTSProviderBase(ABC):
         pass
 
     def audio_to_pcm_data(self, audio_file_path):
-        """音频文件转换为PCM编码"""
+        """Convert audio file to PCM encoding"""
         return audio_to_data(audio_file_path, is_opus=False)
 
     def audio_to_opus_data(self, audio_file_path):
-        """音频文件转换为Opus编码"""
+        """Convert audio file to Opus encoding"""
         return audio_to_data(audio_file_path, is_opus=True)
 
     def tts_one_sentence(
@@ -155,14 +155,14 @@ class TTSProviderBase(ABC):
         content_file=None,
         sentence_id=None,
     ):
-        """发送一句话"""
+        """Send a sentence"""
         if not sentence_id:
             if conn.sentence_id:
                 sentence_id = conn.sentence_id
             else:
                 sentence_id = str(uuid.uuid4().hex)
                 conn.sentence_id = sentence_id
-        # 对于单句的文本，进行分段处理
+        # For single sentences, segment processing is performed
         segments = re.split(r"([。！？!?；;\n])", content_detail)
         for seg in segments:
             self.tts_text_queue.put(
@@ -178,20 +178,29 @@ class TTSProviderBase(ABC):
     async def open_audio_channels(self, conn):
         self.conn = conn
         self.tts_timeout = conn.config.get("tts_timeout", 10)
-        # tts 消化线程
+        # TTS processing thread
         self.tts_priority_thread = threading.Thread(
             target=self.tts_text_priority_thread, daemon=True
         )
         self.tts_priority_thread.start()
 
-        # 音频播放 消化线程
+        # Audio playback processing thread
         self.audio_play_priority_thread = threading.Thread(
             target=self._audio_play_priority_thread, daemon=True
         )
         self.audio_play_priority_thread.start()
 
-    # 这里默认是非流式的处理方式
-    # 流式处理方式请在子类中重写
+    # This is the default non-streaming processing method
+    # Streaming processing methods should be overridden in subclasses
+    def flush_pending_text(self):
+        with self.tts_text_queue.mutex:
+            self.tts_text_queue.queue.clear()
+        with self.tts_audio_queue.mutex:
+            self.tts_audio_queue.queue.clear()
+        self.tts_text_buff.clear()
+        self.processed_chars = 0
+        self.is_first_sentence = True
+        logger.bind(tag=TAG).info("TTS queues flushed due to stop request.")
     def tts_text_priority_thread(self):
         while not self.conn.stop_event.is_set():
             try:
@@ -199,16 +208,21 @@ class TTSProviderBase(ABC):
                 if message.sentence_type == SentenceType.FIRST:
                     self.conn.client_abort = False
                 if self.conn.client_abort:
-                    logger.bind(tag=TAG).info("收到打断信息，终止TTS文本处理线程")
-                    continue
+                    self.flush_pending_text()
+                    logger.bind(tag=TAG).info("Abort active. Skipping TTS message: " + str(message))
+                    continue  # Avoid processing further
                 if message.sentence_type == SentenceType.FIRST:
-                    # 初始化参数
+                    # Initialize parameters
                     self.tts_stop_request = False
                     self.processed_chars = 0
                     self.tts_text_buff = []
                     self.is_first_sentence = True
                     self.tts_audio_first_sentence = True
                 elif ContentType.TEXT == message.content_type:
+                    if self.conn.client_abort:
+                        logger.bind(tag=TAG).info("Abort active. Skipping TTS message: " + str(message))
+                        self.flush_pending_text()
+                        continue  # Avoid processing further
                     self.tts_text_buff.append(message.content_detail)
                     segment_text = self._get_segment_text()
                     if segment_text:
@@ -244,7 +258,7 @@ class TTSProviderBase(ABC):
                 continue
             except Exception as e:
                 logger.bind(tag=TAG).error(
-                    f"处理TTS文本失败: {str(e)}, 类型: {type(e).__name__}, 堆栈: {traceback.format_exc()}"
+                    f"Failed to process TTS text: {str(e)}, Type: {type(e).__name__}, Stack: {traceback.format_exc()}"
                 )
                 continue
 
@@ -280,17 +294,17 @@ class TTSProviderBase(ABC):
         pass
 
     async def close(self):
-        """资源清理方法"""
+        """Resource cleanup method"""
         if hasattr(self, "ws") and self.ws:
             await self.ws.close()
 
     def _get_segment_text(self):
-        # 合并当前全部文本并处理未分割部分
+        # Merge all current text and process unsegmented parts
         full_text = "".join(self.tts_text_buff)
-        current_text = full_text[self.processed_chars :]  # 从未处理的位置开始
+        current_text = full_text[self.processed_chars :]  # Start from unprocessed position
         last_punct_pos = -1
 
-        # 根据是否是第一句话选择不同的标点符号集合
+        # Choose different punctuation sets based on whether it's the first sentence
         punctuations_to_use = (
             self.first_sentence_punctuations
             if self.is_first_sentence
@@ -309,26 +323,26 @@ class TTSProviderBase(ABC):
             segment_text = textUtils.get_string_no_punctuation_or_emoji(
                 segment_text_raw
             )
-            self.processed_chars += len(segment_text_raw)  # 更新已处理字符位置
+            self.processed_chars += len(segment_text_raw)  # Update processed character position
 
-            # 如果是第一句话，在找到第一个逗号后，将标志设置为False
+            # If it's the first sentence, set the flag to False after finding the first comma
             if self.is_first_sentence:
                 self.is_first_sentence = False
 
             return segment_text
         elif self.tts_stop_request and current_text:
             segment_text = current_text
-            self.is_first_sentence = True  # 重置标志
+            self.is_first_sentence = True  # Reset flag
             return segment_text
         else:
             return None
 
     def _process_audio_file(self, tts_file):
-        """处理音频文件并转换为指定格式
+        """Process audio file and convert to specified format
 
         Args:
-            tts_file: 音频文件路径
-            content_detail: 内容详情
+            tts_file: Audio file path
+            content_detail: Content details
 
         Returns:
             tuple: (sentence_type, audio_datas, content_detail)
@@ -356,10 +370,10 @@ class TTSProviderBase(ABC):
         self.tts_audio_queue.put((SentenceType.LAST, [], None))
 
     def _process_remaining_text(self):
-        """处理剩余的文本并生成语音
+        """Process remaining text and generate speech
 
         Returns:
-            bool: 是否成功处理了文本
+            bool: Whether text was successfully processed
         """
         full_text = "".join(self.tts_text_buff)
         remaining_text = full_text[self.processed_chars :]

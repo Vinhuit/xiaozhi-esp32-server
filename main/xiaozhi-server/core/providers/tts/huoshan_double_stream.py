@@ -232,7 +232,6 @@ class TTSProvider(TTSProviderBase):
                             loop=self.conn.loop,
                         )
                         future.result()
-                        self.tts_audio_first_sentence = True
                         self.before_stop_play_files.clear()
                         logger.bind(tag=TAG).info("TTS会话启动成功")
                     except Exception as e:

@@ -120,15 +120,18 @@ class TTSProvider(TTSProviderBase):
 
         # WebSocket配置
         self.host = config.get("host", "nls-gateway-cn-beijing.aliyuncs.com")
-        self.ws_url = f"wss://{self.host}/ws/v1"
+        # 如果配置的是内网地址（包含-internal.aliyuncs.com），则使用ws协议，默认是wss协议
+        if "-internal." in self.host:
+            self.ws_url = f"ws://{self.host}/ws/v1"
+        else:
+            # 默认使用wss协议
+            self.ws_url = f"wss://{self.host}/ws/v1"
         self.ws = None
         self._monitor_task = None
         self.last_active_time = None
 
         # 专属tts设置
         self.message_id = ""
-        self.tts_text = ""
-        self.text_buffer = []
 
         # 创建Opus编码器
         self.opus_encoder = opus_encoder_utils.OpusEncoderUtils(
@@ -229,7 +232,6 @@ class TTSProvider(TTSProviderBase):
 
                         # aliyunStream独有的参数生成
                         self.message_id = str(uuid.uuid4().hex)
-                        self.text_buffer = []
 
                         logger.bind(tag=TAG).info("开始启动TTS会话...")
                         future = asyncio.run_coroutine_threadsafe(
@@ -250,7 +252,6 @@ class TTSProvider(TTSProviderBase):
                             logger.bind(tag=TAG).debug(
                                 f"开始发送TTS文本: {message.content_detail}"
                             )
-                            self.text_buffer.append(message.content_detail)
                             future = asyncio.run_coroutine_threadsafe(
                                 self.text_to_speak(message.content_detail, None),
                                 loop=self.conn.loop,
@@ -275,9 +276,6 @@ class TTSProvider(TTSProviderBase):
                 if message.sentence_type == SentenceType.LAST:
                     try:
                         logger.bind(tag=TAG).info("开始结束TTS会话...")
-                        self.tts_text = textUtils.get_string_no_punctuation_or_emoji(
-                            "".join(self.text_buffer).replace("\n", "")
-                        )
                         future = asyncio.run_coroutine_threadsafe(
                             self.finish_session(self.conn.sentence_id),
                             loop=self.conn.loop,
@@ -444,34 +442,35 @@ class TTSProvider(TTSProviderBase):
                             event_name = header.get("name")
                             if event_name == "SynthesisStarted":
                                 logger.bind(tag=TAG).debug("TTS合成已启动")
-                            elif event_name == "SentenceBegin":
-                                logger.bind(tag=TAG).debug(
-                                    f"句子语音生成开始: {self.tts_text}"
-                                )
-                                opus_datas_cache = []
                                 self.tts_audio_queue.put(
-                                    (SentenceType.FIRST, [], self.tts_text)
+                                    (SentenceType.FIRST, [], None)
                                 )
+                            elif event_name == "SentenceBegin":
+                                opus_datas_cache = []
                             elif event_name == "SentenceEnd":
-                                logger.bind(tag=TAG).info(
-                                    f"句子语音生成成功： {self.tts_text}"
-                                )
                                 if (
                                     not is_first_sentence
                                     or first_sentence_segment_count > 10
                                 ):
                                     # 发送缓存的数据
-                                    self.tts_audio_queue.put(
-                                        (SentenceType.MIDDLE, opus_datas_cache, None)
-                                    )
+                                    if self.conn.tts_MessageText:
+                                        logger.bind(tag=TAG).info(
+                                            f"句子语音生成成功： {self.conn.tts_MessageText}"
+                                        )
+                                        self.tts_audio_queue.put(
+                                            (SentenceType.MIDDLE, opus_datas_cache, self.conn.tts_MessageText)
+                                        )
+                                        self.conn.tts_MessageText = None
+                                    else:
+                                        self.tts_audio_queue.put(
+                                            (SentenceType.MIDDLE, opus_datas_cache, None)
+                                        )
                                 # 第一句话结束后，将标志设置为False
                                 is_first_sentence = False
                             elif event_name == "SynthesisCompleted":
                                 logger.bind(tag=TAG).debug(f"会话结束～～")
                                 self._process_before_stop_play_files()
                                 session_finished = True
-                                self.reuse_judgment = time.time()
-                                self.tts_text = ""
                                 break
                         except json.JSONDecodeError:
                             logger.bind(tag=TAG).warning("收到无效的JSON消息")

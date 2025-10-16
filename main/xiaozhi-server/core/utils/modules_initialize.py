@@ -92,9 +92,12 @@ def initialize_modules(
 
     # 初始化ASR模块
     if init_asr:
+        logger.bind(tag=TAG).info(f"Initializing ASR module with config: {config['selected_module']['ASR']}")
         select_asr_module = config["selected_module"]["ASR"]
         modules["asr"] = initialize_asr(config)
         logger.bind(tag=TAG).info(f"初始化组件: asr成功 {select_asr_module}")
+    # else:
+        # logger.bind(tag=TAG).info("ASR not initialized, skipping")
     return modules
 
 

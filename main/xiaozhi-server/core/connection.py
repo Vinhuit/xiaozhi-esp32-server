@@ -132,6 +132,8 @@ class ConnectionHandler:
 
         # tts相关变量
         self.sentence_id = None
+        # 处理TTS响应没有文本返回
+        self.tts_MessageText = ""
 
         # iot相关变量
         self.iot_descriptors = {}
@@ -182,8 +184,13 @@ class ConnectionHandler:
                     await ws.send("端口正常，如需测试连接，请使用test_page.html")
                     await self.close(ws)
                     return
-            # 获取客户端ip地址
-            self.client_ip = ws.remote_address[0]
+            real_ip = self.headers.get("x-real-ip") or self.headers.get(
+                "x-forwarded-for"
+            )
+            if real_ip:
+                self.client_ip = real_ip.split(",")[0].strip()
+            else:
+                self.client_ip = ws.remote_address[0]
             self.logger.bind(tag=TAG).info(
                 f"{self.client_ip} conn - Headers: {self.headers}"
             )
@@ -272,7 +279,6 @@ class ConnectionHandler:
     async def _route_message(self, message):
         """消息路由"""
         if isinstance(message, str):
-            self.last_activity_time = time.time() * 1000
             await handleTextMessage(self, message)
         elif isinstance(message, bytes):
             if self.vad is None:
@@ -335,7 +341,7 @@ class ConnectionHandler:
                 self.config.get("selected_module", {})
             )
             self.logger = create_connection_logger(self.selected_module_str)
-            
+
             """初始化组件"""
             if self.config.get("prompt") is not None:
                 user_prompt = self.config["prompt"]
@@ -351,10 +357,10 @@ class ConnectionHandler:
                 self.vad = self._vad
             if self.asr is None:
                 self.asr = self._initialize_asr()
-            
+
             # 初始化声纹识别
             self._initialize_voiceprint()
-            
+
             # 打开语音识别通道
             asyncio.run_coroutine_threadsafe(
                 self.asr.open_audio_channels(self), self.loop
@@ -473,7 +479,7 @@ class ConnectionHandler:
         )
 
         init_vad = check_vad_update(self.common_config, private_config)
-        init_asr = check_asr_update(self.common_config, private_config)
+        init_asr = check_asr_update(self.common_config, private_config,self.logger)
 
         if init_vad:
             self.config["VAD"] = private_config["VAD"]
@@ -804,9 +810,9 @@ class ConnectionHandler:
             if not bHasError:
                 # 如需要大模型先处理一轮，添加相关处理后的日志情况
                 if len(response_message) > 0:
-                    self.dialogue.put(
-                        Message(role="assistant", content="".join(response_message))
-                    )
+                    text_buff = "".join(response_message)
+                    self.tts_MessageText = text_buff
+                    self.dialogue.put(Message(role="assistant", content=text_buff))
                 response_message.clear()
                 self.logger.bind(tag=TAG).debug(
                     f"function_name={function_name}, function_id={function_id}, function_arguments={function_arguments}"
@@ -828,9 +834,9 @@ class ConnectionHandler:
 
         # 存储对话内容
         if len(response_message) > 0:
-            self.dialogue.put(
-                Message(role="assistant", content="".join(response_message))
-            )
+            text_buff = "".join(response_message)
+            self.tts_MessageText = text_buff
+            self.dialogue.put(Message(role="assistant", content=text_buff))
         if depth == 0:
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
@@ -870,7 +876,7 @@ class ConnectionHandler:
                             {
                                 "id": function_id,
                                 "function": {
-                                    "arguments": function_arguments,
+                                    "arguments": "{}" if function_arguments == "" else function_arguments,
                                     "name": function_name,
                                 },
                                 "type": "function",
@@ -911,9 +917,7 @@ class ConnectionHandler:
                     if self.executor is None:
                         continue
                     # 提交任务到线程池
-                    self.executor.submit(
-                        self._process_report, *item
-                    )
+                    self.executor.submit(self._process_report, *item)
                 except Exception as e:
                     self.logger.bind(tag=TAG).error(f"聊天记录上报线程异常: {e}")
             except queue.Empty:

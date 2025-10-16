@@ -160,10 +160,6 @@ export default {
     visible(newVal) {
       if (newVal) {
         this.dialogKey = Date.now();
-      }
-    },
-    agentId(newVal) {
-      if (newVal) {
         api.agent.getRecentlyFiftyByAgentId(this.agentId, ((data) => {
           this.valueTypeOptions = data.data.data.map(item => ({
             ...item

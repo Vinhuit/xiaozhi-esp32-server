@@ -103,7 +103,11 @@ public class AgentChatHistoryServiceImpl extends ServiceImpl<AiAgentChatHistoryD
         wrapper.select(AgentChatHistoryEntity::getContent, AgentChatHistoryEntity::getAudioId)
                 .eq(AgentChatHistoryEntity::getAgentId, agentId)
                 .eq(AgentChatHistoryEntity::getChatType, AgentChatHistoryType.USER.getValue())
-                .isNotNull(AgentChatHistoryEntity::getAudioId);
+                .isNotNull(AgentChatHistoryEntity::getAudioId)
+                // 添加此行，确保查询结果按照创建时间降序排列
+                // 使用id的原因：数据形式，id越大的创建时间就越晚，所以使用id的结果和创建时间降序排列结果一样
+                // id作为降序排列的优势，性能高，有主键索引，不用在排序的时候重新进行排除扫描比较
+                .orderByDesc(AgentChatHistoryEntity::getId); 
 
         // 构建分页查询，查询前50页数据
         Page<AgentChatHistoryEntity> pageParam = new Page<>(0, 50);

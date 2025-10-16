@@ -234,13 +234,19 @@ def audio_to_data(audio_file_path, is_opus=True):
 
 def audio_bytes_to_data(audio_bytes, file_type, is_opus=True):
     """
-    直接用音频二进制数据转为opus/pcm数据，支持wav、mp3、p3
+    Convert raw audio bytes to Opus or PCM data.
+
+    If the file type is 'pcm', treat the input as raw PCM (16-bit, 16kHz, mono).
     """
     if file_type == "p3":
-        # 直接用p3解码
         return p3.decode_opus_from_bytes(audio_bytes)
+
+    elif file_type == "pcm":
+        # raw PCM 16-bit little endian mono @ 16kHz
+        return pcm_to_data(audio_bytes, is_opus), len(audio_bytes) / (16000 * 2)  # duration in seconds
+
     else:
-        # 其他格式用pydub
+        # Assume file_type is 'mp3', 'wav', etc.
         audio = AudioSegment.from_file(
             BytesIO(audio_bytes), format=file_type, parameters=["-nostdin"]
         )
@@ -248,6 +254,7 @@ def audio_bytes_to_data(audio_bytes, file_type, is_opus=True):
         duration = len(audio) / 1000.0
         raw_data = audio.raw_data
         return pcm_to_data(raw_data, is_opus), duration
+
 
 
 def pcm_to_data(raw_data, is_opus=True):
@@ -331,26 +338,31 @@ def check_vad_update(before_config, new_config):
     return update_vad
 
 
-def check_asr_update(before_config, new_config):
+def check_asr_update(before_config, new_config, logger):
     if (
         new_config.get("selected_module") is None
         or new_config["selected_module"].get("ASR") is None
     ):
+        logger.bind(tag=TAG).info("ASR not initialized, skipping"+str(new_config))
         return False
+    
     update_asr = False
     current_asr_module = before_config["selected_module"]["ASR"]
     new_asr_module = new_config["selected_module"]["ASR"]
-    current_asr_type = (
-        current_asr_module
-        if "type" not in before_config["ASR"][current_asr_module]
-        else before_config["ASR"][current_asr_module]["type"]
-    )
-    new_asr_type = (
-        new_asr_module
-        if "type" not in new_config["ASR"][new_asr_module]
-        else new_config["ASR"][new_asr_module]["type"]
-    )
-    update_asr = current_asr_type != new_asr_type
+    # current_asr_type = (
+    #     current_asr_module
+    #     if "type" not in before_config["ASR"][current_asr_module]
+    #     else before_config["ASR"][current_asr_module]["type"]
+    # )
+    # new_asr_type = (
+    #     new_asr_module
+    #     if "type" not in new_config["ASR"][new_asr_module]
+    #     else new_config["ASR"][new_asr_module]["type"]
+    # )
+    logger.bind(tag=TAG).info("ASR update check: current={} new={}".format(
+        current_asr_module, new_asr_module))
+
+    update_asr = current_asr_module != new_asr_module
     return update_asr
 
 

@@ -15,7 +15,7 @@ WORKDIR /opt/xiaozhi-esp32-server
 
 # 安装系统依赖
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libopus0 ffmpeg && \
+    apt-get install -y --no-install-recommends libopus0 ffmpeg npm procps git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

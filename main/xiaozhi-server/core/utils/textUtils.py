@@ -24,6 +24,15 @@ EMOJI_MAP = {
     "😘": "kissy",
     "😏": "confident",
 }
+EMOJI_RANGES = [
+    (0x1F600, 0x1F64F),
+    (0x1F300, 0x1F5FF),
+    (0x1F680, 0x1F6FF),
+    (0x1F900, 0x1F9FF),
+    (0x1FA70, 0x1FAFF),
+    (0x2600, 0x26FF),
+    (0x2700, 0x27BF),
+]
 
 
 def get_string_no_punctuation_or_emoji(s):
@@ -65,18 +74,7 @@ def is_punctuation_or_emoji(char):
     }
     if char.isspace() or char in punctuation_set:
         return True
-    # 检查表情符号（保留原有逻辑）
-    code_point = ord(char)
-    emoji_ranges = [
-        (0x1F600, 0x1F64F),
-        (0x1F300, 0x1F5FF),
-        (0x1F680, 0x1F6FF),
-        (0x1F900, 0x1F9FF),
-        (0x1FA70, 0x1FAFF),
-        (0x2600, 0x26FF),
-        (0x2700, 0x27BF),
-    ]
-    return any(start <= code_point <= end for start, end in emoji_ranges)
+    return is_emoji(char)
 
 
 async def get_emotion(conn, text):
@@ -102,3 +100,14 @@ async def get_emotion(conn, text):
     except Exception as e:
         conn.logger.bind(tag=TAG).warning(f"发送情绪表情失败，错误:{e}")
     return
+
+
+def is_emoji(char):
+    """检查字符是否为emoji表情"""
+    code_point = ord(char)
+    return any(start <= code_point <= end for start, end in EMOJI_RANGES)
+
+
+def check_emoji(text):
+    """去除文本中的所有emoji表情"""
+    return ''.join(char for char in text if not is_emoji(char) and char != "\n")
