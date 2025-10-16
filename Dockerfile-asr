@@ -1,0 +1,50 @@
+# -------- Stage 1: Builder --------
+FROM python:3.10-slim AS builder
+
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# Install build dependencies
+
+
+# Upgrade pip and install all Python dependencies
+RUN pip install --upgrade pip && \
+    pip install --prefix=/install  \
+        typing_extensions==4.12.2 \
+        fastapi \
+        uvicorn[standard] \
+        python-multipart \
+        git+https://github.com/m-bain/whisperx.git \
+        torchvision  torch==2.8.0 torchaudio==2.8.0  pyannote.audio==3.3.2 --extra-index-url https://download.pytorch.org/whl/cu118 && \
+    rm -rf /root/.cache/pip
+
+# Fix executable stack for all ctranslate2 shared objects
+RUN pip install --force-reinstall ctranslate2==4.6.0
+
+# -------- Stage 2: Runtime --------
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+ 
+
+ENV TZ=UTC \
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# Install only runtime dependencies (ffmpeg)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends  ffmpeg python3 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy installed packages from builder
+# COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /install /usr/local
+ENV PYTHONPATH=/usr/local/lib/python3.10/site-packages/
+# Copy application files
+COPY run.sh server.py /app/
+
+ENTRYPOINT ["python3", "/app/server.py"]
+CMD ["--host", "0.0.0.0", "--port", "8022", "--model", "turbo"]
